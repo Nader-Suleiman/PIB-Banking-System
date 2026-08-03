@@ -4,7 +4,9 @@ from account import Account
 from customer import Customer
 from loan import Loan
 from user import User
-from database import (create_tables,get_account,get_all_accounts,get_all_transactions,insert_transaction,update_account_balance, insert_loan, customer_exists, insert_customer, insert_account, account_exists, insert_user, user_exists, get_user_by_username,add_customer_id_to_users,get_accounts_by_customer,link_user_to_customer,get_transactions_by_customer,add_role_to_users,get_all_users,update_user_status,delete_user)
+from database import (create_tables,get_account,get_all_accounts,get_all_transactions,insert_transaction,update_account_balance, insert_loan, customer_exists,insert_customer, insert_account, account_exists, insert_user, user_exists, get_user_by_username,add_customer_id_to_users,get_accounts_by_customer,
+link_user_to_customer,get_transactions_by_customer,add_role_to_users,get_all_users,update_user_status,delete_user,get_analytics_summary,get_transactions_by_type,get_accounts_by_type)
+
 from helpers import(login_required,is_customer,is_teller,is_admin,is_staff)
 
 app = Flask(__name__)
@@ -812,6 +814,45 @@ def teller_transactions():
     return render_template(
         "transactions.html",
         transactions=transactions
+    )
+    
+@app.route("/admin/analytics")
+def analytics_dashboard():
+
+    if "user_id" not in session:
+        return redirect(url_for("login_page"))
+
+    if session.get("role") != "Admin":
+        flash("Access denied.", "error")
+        return redirect(url_for("login_page"))
+
+    summary = get_analytics_summary()
+    transaction_data = get_transactions_by_type()
+    account_data = get_accounts_by_type()
+
+    transaction_labels = [
+        row[0] for row in transaction_data
+    ]
+
+    transaction_values = [
+        row[1] for row in transaction_data
+    ]
+
+    account_labels = [
+        row[0] for row in account_data
+    ]
+
+    account_values = [
+        row[1] for row in account_data
+    ]
+
+    return render_template(
+        "analytics_dashboard.html",
+        summary=summary,
+        transaction_labels=transaction_labels,
+        transaction_values=transaction_values,
+        account_labels=account_labels,
+        account_values=account_values
     )
 
 if __name__ == "__main__":

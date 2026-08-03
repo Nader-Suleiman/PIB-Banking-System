@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Analytics Dashboard</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+</head>
+
+<body class="service-page">
+
+<header class="pib-header">
+
+    <div class="pib-brand">
+
+        <div class="pib-logo-mark">
+            PIB
+        </div>
+
+        <div>
+
+            <h1>
+                Palestine Investment Bank
+            </h1>
+
+            <p>
+                Analytics Dashboard
+            </p>
+
+        </div>
+
+    </div>
+
+    <div class="header-user">
+
+        <span>
+            Admin: {{ session['username'] }}
+        </span>
+
+        <a
+            href="{{ url_for('logout') }}"
+            class="logout-button"
+        >
+            Logout
+        </a>
+
+    </div>
+
+</header>
+
+
+<main class="dashboard-content">
+
+    <section class="analytics-hero">
+
+        <div>
+
+            <p class="section-label">
+                BUSINESS INTELLIGENCE
+            </p>
+
+            <h2>
+                Bank Analytics Dashboard
+            </h2>
+
+            <p>
+                Monitor customers, accounts, transactions,
+                loans and overall banking activity.
+            </p>
+
+        </div>
+
+        <div class="analytics-update">
+            Live database overview
+        </div>
+
+    </section>
+
+
+    <section class="analytics-grid">
+
+        <div class="analytics-summary-card">
+
+            <div class="analytics-card-icon">
+                C
+            </div>
+
+            <div>
+
+                <p>Total Customers</p>
+
+                <h3>
+                    {{ summary.total_customers }}
+                </h3>
+
+                <span>
+                    Registered customer profiles
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <div class="analytics-summary-card">
+
+            <div class="analytics-card-icon">
+                A
+            </div>
+
+            <div>
+
+                <p>Total Accounts</p>
+
+                <h3>
+                    {{ summary.total_accounts }}
+                </h3>
+
+                <span>
+                    Bank accounts in the system
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <div class="analytics-summary-card">
+
+            <div class="analytics-card-icon">
+                $
+            </div>
+
+            <div>
+
+                <p>Total Balance</p>
+
+                <h3>
+                    ${{ "%.2f"|format(summary.total_balance) }}
+                </h3>
+
+                <span>
+                    Combined customer balances
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <div class="analytics-summary-card">
+
+            <div class="analytics-card-icon">
+                T
+            </div>
+
+            <div>
+
+                <p>Total Transactions</p>
+
+                <h3>
+                    {{ summary.total_transactions }}
+                </h3>
+
+                <span>
+                    Recorded banking transactions
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <div class="analytics-summary-card">
+
+            <div class="analytics-card-icon">
+                L
+            </div>
+
+            <div>
+
+                <p>Total Loans</p>
+
+                <h3>
+                    {{ summary.total_loans }}
+                </h3>
+
+                <span>
+                    Loan records in the system
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <div class="analytics-summary-card">
+
+            <div class="analytics-card-icon">
+                U
+            </div>
+
+            <div>
+
+                <p>Active Users</p>
+
+                <h3>
+                    {{ summary.active_users }}
+                </h3>
+
+                <span>
+                    Users currently able to log in
+                </span>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <section class="analytics-chart-section">
+
+        <div class="analytics-section-heading">
+
+            <p class="section-label">
+                DATA VISUALIZATION
+            </p>
+
+            <h2>
+                Banking Activity Overview
+            </h2>
+
+            <p>
+                Visual summaries of transaction activity and account types.
+            </p>
+
+        </div>
+
+
+        <div class="chart-container">
+
+            <div class="chart-card">
+
+                <div class="chart-card-heading">
+
+                    <h3>
+                        Transactions by Type
+                    </h3>
+
+                    <p>
+                        Compare deposits, withdrawals and transfers.
+                    </p>
+
+                </div>
+
+                <div class="chart-wrapper">
+
+                    <canvas id="transactionChart"></canvas>
+
+                </div>
+
+            </div>
+
+
+            <div class="chart-card">
+
+                <div class="chart-card-heading">
+
+                    <h3>
+                        Accounts by Type
+                    </h3>
+
+                    <p>
+                        Distribution of checking and savings accounts.
+                    </p>
+
+                </div>
+
+                <div class="chart-wrapper">
+
+                    <canvas id="accountChart"></canvas>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <a
+        href="{{ url_for('admin_dashboard') }}"
+        class="service-back-link"
+    >
+        ← Return to Admin Dashboard
+    </a>
+
+</main>
+
+
+<script>
+
+    new Chart(
+        document.getElementById("transactionChart"),
+        {
+            type: "bar",
+
+            data: {
+                labels: {{ transaction_labels | tojson }},
+
+                datasets: [
+                    {
+                        label: "Transactions",
+                        data: {{ transaction_values | tojson }},
+                        borderWidth: 1,
+                        borderRadius: 8
+                    }
+                ]
+            },
+
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0
+                        }
+                    }
+                }
+            }
+        }
+    );
+
+
+    new Chart(
+        document.getElementById("accountChart"),
+        {
+            type: "doughnut",
+
+            data: {
+                labels: {{ account_labels | tojson }},
+
+                datasets: [
+                    {
+                        data: {{ account_values | tojson }},
+                        borderWidth: 2
+                    }
+                ]
+            },
+
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+
+                plugins: {
+                    legend: {
+                        position: "bottom"
+                    }
+                },
+
+                cutout: "62%"
+            }
+        }
+    );
+
+</script>
+
+</body>
+
+</html>

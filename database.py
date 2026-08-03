@@ -700,3 +700,79 @@ def get_all_users():
 
     return users
 
+def get_analytics_summary():
+    connection = create_connection()
+    cursor = connection.cursor()
+
+    cursor.execute("SELECT COUNT(*) FROM customers")
+    total_customers = cursor.fetchone()[0]
+
+    cursor.execute("SELECT COUNT(*) FROM accounts")
+    total_accounts = cursor.fetchone()[0]
+
+    cursor.execute("""
+        SELECT COALESCE(SUM(balance), 0)
+        FROM accounts
+    """)
+    total_balance = cursor.fetchone()[0]
+
+    cursor.execute("SELECT COUNT(*) FROM transactions")
+    total_transactions = cursor.fetchone()[0]
+
+    cursor.execute("SELECT COUNT(*) FROM loans")
+    total_loans = cursor.fetchone()[0]
+
+    cursor.execute("""
+        SELECT COUNT(*)
+        FROM users
+        WHERE is_active = 1
+    """)
+    active_users = cursor.fetchone()[0]
+
+    connection.close()
+
+    return {
+        "total_customers": total_customers,
+        "total_accounts": total_accounts,
+        "total_balance": total_balance,
+        "total_transactions": total_transactions,
+        "total_loans": total_loans,
+        "active_users": active_users
+    }
+    
+def get_transactions_by_type():
+    connection = create_connection()
+    cursor = connection.cursor()
+    
+    cursor.execute("""
+        SELECT
+            transaction_type,
+            COUNT(*)
+        FROM transactions
+        GROUP BY transaction_type
+        ORDER BY transaction_type
+    """)
+    
+    results = cursor.fetchall()
+    connection.close()
+    
+    return results 
+
+
+def get_accounts_by_type():
+    connection = create_connection()
+    cursor = connection.cursor()
+    
+    cursor.execute("""
+        SELECT
+            account_type,
+            COUNT(*)
+        FROM accounts
+        GROUP BY account_type
+        ORDER BY account_type
+    """)
+    
+    results = cursor.fetchall()
+    connection.close()
+    
+    return results 
