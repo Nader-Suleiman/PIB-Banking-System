@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Create {{ staff_role }}</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
+
+</head>
+
+<body class="service-page">
+
+    <header class="pib-header">
+
+        <div class="pib-brand">
+
+            <div class="pib-logo-mark">
+                PIB
+            </div>
+
+            <div>
+                <h1>Palestine Investment Bank</h1>
+                <p>Administration Portal</p>
+            </div>
+
+        </div>
+
+        <div class="header-user">
+
+            <span>
+                Admin: {{ session['username'] }}
+            </span>
+
+            <a
+                href="{{ url_for('logout') }}"
+                class="logout-button"
+            >
+                Logout
+            </a>
+
+        </div>
+
+    </header>
+
+
+    <main class="service-form-container">
+
+        <section class="service-form-card">
+
+            <div class="service-form-heading">
+
+                <div class="service-form-icon">
+                    {% if staff_role == "Admin" %}
+                        A
+                    {% else %}
+                        T
+                    {% endif %}
+                </div>
+
+                <div>
+
+                    <p class="service-form-label">
+                        STAFF MANAGEMENT
+                    </p>
+
+                    <h2>
+                        Create {{ staff_role }}
+                    </h2>
+
+                    <p>
+                        Create a new {{ staff_role|lower }} login account
+                        for the banking system.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+
+                {% if messages %}
+
+                    {% for category, message in messages %}
+
+                        <div class="message {{ category }}">
+                            {{ message }}
+                        </div>
+
+                    {% endfor %}
+
+                {% endif %}
+
+            {% endwith %}
+
+
+            <form
+                method="POST"
+                class="service-form"
+            >
+
+                <div class="form-group">
+
+                    <label for="user_id">
+                        User ID
+                    </label>
+
+                    <input
+                        type="number"
+                        id="user_id"
+                        name="user_id"
+                        placeholder="Example: 2001"
+                        required
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="username">
+                        Username
+                    </label>
+
+                    <input
+                        type="text"
+                        id="username"
+                        name="username"
+                        placeholder="Enter username"
+                        required
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="password">
+                        Password
+                    </label>
+
+                    <input
+                        type="password"
+                        id="password"
+                        name="password"
+                        placeholder="Enter password"
+                        required
+                    >
+
+                </div>
+
+
+                <button
+                    type="submit"
+                    class="pib-submit-button"
+                >
+                    Create {{ staff_role }}
+                </button>
+
+            </form>
+
+
+            <a
+                href="{{ url_for('admin_dashboard') }}"
+                class="service-back-link"
+            >
+                ← Return to Admin Dashboard
+            </a>
+
+        </section>
+
+    </main>
+
+</body>
+</html>

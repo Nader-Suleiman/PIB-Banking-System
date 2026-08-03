@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Transaction History</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
+</head>
+
+<body class="service-page">
+
+    <header class="pib-header">
+
+        <div class="pib-brand">
+
+            <div class="pib-logo-mark">
+                PIB
+            </div>
+
+            <div>
+                <h1>Palestine Investment Bank</h1>
+                <p>بنك الاستثمار الفلسطيني</p>
+            </div>
+
+        </div>
+
+        <div class="header-user">
+
+            <span>{{ session['username'] }}</span>
+
+            <a href="{{ url_for('logout') }}" class="logout-button">
+                Logout
+            </a>
+
+        </div>
+
+    </header>
+
+
+    <main class="table-container">
+
+        <div class="table-card">
+
+            <div class="service-form-heading">
+
+                <div class="service-form-icon">
+                    ≡
+                </div>
+
+                <div>
+
+                    <p class="service-form-label">
+                        ACCOUNT ACTIVITY
+                    </p>
+
+                    <h2>
+                        Transaction History
+                    </h2>
+
+                    <p>
+                        Review deposits, withdrawals and transfers.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            {% if transactions %}
+
+                <table class="data-table">
+
+                    <thead>
+
+                        <tr>
+                            <th>Transaction ID</th>
+                            <th>Account Number</th>
+                            <th>Transaction Type</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Date Created</th>
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        {% for transaction in transactions %}
+
+                            <tr>
+
+                                <td>
+                                    {{ transaction[0] }}
+                                </td>
+
+                                <td>
+                                    {{ transaction[1] }}
+                                </td>
+
+                                <td>
+                                    {{ transaction[2] }}
+                                </td>
+
+                                <td>
+                                    ${{ "%.2f"|format(transaction[3]) }}
+                                </td>
+
+                                <td>
+                                    <span class="status-active">
+                                        {{ transaction[4] }}
+                                    </span>
+                                </td>
+
+                                <td>
+                                    {{ transaction[5] }}
+                                </td>
+
+                            </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            {% else %}
+
+                <p class="empty-message">
+                    No transactions were found.
+                </p>
+
+            {% endif %}
+
+
+            <a
+                href="{{ url_for('dashboard') }}"
+                class="service-back-link"
+            >
+                ← Return to Dashboard
+            </a>
+
+        </div>
+
+    </main>
+
+</body>
+</html>

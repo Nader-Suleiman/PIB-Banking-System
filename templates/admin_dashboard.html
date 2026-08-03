@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Admin Dashboard</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
+</head>
+
+<body class="service-page">
+
+    <header class="pib-header">
+
+        <div class="pib-brand">
+
+            <div class="pib-logo-mark">
+                PIB
+            </div>
+
+            <div>
+                <h1>Palestine Investment Bank</h1>
+                <p>Administration Portal</p>
+            </div>
+
+        </div>
+
+        <div class="header-user">
+
+            <span>
+                Admin: {{ session['username'] }}
+            </span>
+
+            <a
+                href="{{ url_for('logout') }}"
+                class="logout-button"
+            >
+                Logout
+            </a>
+
+        </div>
+
+    </header>
+
+
+    <main class="dashboard-content">
+
+        <section class="section-heading">
+
+            <p class="section-label">
+                ADMINISTRATION
+            </p>
+
+            <h2>
+                Admin Dashboard
+            </h2>
+
+            <p>
+                Manage customers, staff, accounts and banking operations.
+            </p>
+
+        </section>
+
+
+        <section class="admin-section">
+
+            <div class="admin-section-heading">
+                <h2>Customer Management</h2>
+                <p>Create customers and manage staff accounts.</p>
+            </div>
+
+            <div class="pib-service-grid">
+
+                <a
+                    href="{{ url_for('create_account_page') }}"
+                    class="pib-service-card"
+                >
+                    <div class="service-icon">+</div>
+
+                    <h3>Create Customer</h3>
+
+                    <p>
+                        Register a customer and create a bank account.
+                    </p>
+
+                    <span>Open →</span>
+                </a>
+
+
+                <a
+                    href="{{ url_for('create_teller_page') }}"
+                    class="pib-service-card"
+                >
+                    <div class="service-icon">T</div>
+
+                    <h3>Create Teller</h3>
+
+                    <p>
+                        Create a new teller login account.
+                    </p>
+
+                    <span>Open →</span>
+                </a>
+
+
+                <a
+                    href="{{ url_for('create_admin_page') }}"
+                    class="pib-service-card"
+                >
+                    <div class="service-icon">A</div>
+
+                    <h3>Create Admin</h3>
+
+                    <p>
+                        Create another administrator account.
+                    </p>
+
+                    <span>Open →</span>
+                </a>
+
+            </div>
+
+        </section>
+
+
+        <section class="admin-section">
+
+            <div class="admin-section-heading">
+                <h2>Bank Operations</h2>
+                <p>Perform customer banking transactions.</p>
+            </div>
+
+            <div class="pib-service-grid">
+
+                <a
+                    href="{{ url_for('deposit_page') }}"
+                    class="pib-service-card"
+                >
+                    <div class="service-icon">$</div>
+
+                    <h3>Deposit</h3>
+
+                    <p>
+                        Deposit money into a customer account.
+                    </p>
+
+                    <span>Open →</span>
+                </a>
+
+
+                <a
+                    href="{{ url_for('withdraw_page') }}"
+                    class="pib-service-card"
+                >
+                    <div class="service-icon">−</div>
+
+                    <h3>Withdraw</h3>
+
+                    <p>
+                        Withdraw money from a customer account.
+                    </p>
+
+                    <span>Open →</span>
+                </a>
+
+
+                <a
+                    href="{{ url_for('transfer_page') }}"
+                    class="pib-service-card"
+                >
+                    <div class="service-icon">↔</div>
+
+                    <h3>Transfer</h3>
+
+                    <p>
+                        Transfer funds between customer accounts.
+                    </p>
+
+                    <span>Open →</span>
+                </a>
+
+            </div>
+
+        </section>
+
+
+        <section class="admin-section">
+
+            <div class="admin-section-heading">
+                <h2>Reports and Records</h2>
+                <p>Review bank-wide account and transaction information.</p>
+            </div>
+
+            <div class="pib-service-grid">
+
+                <a
+                    href="{{ url_for('admin_accounts') }}"
+                    class="pib-service-card"
+                >
+                    <div class="service-icon">▣</div>
+
+                    <h3>All Accounts</h3>
+
+                    <p>
+                        View all customer accounts and balances.
+                    </p>
+
+                    <span>Open →</span>
+                </a>
+
+
+                <a
+                    href="{{ url_for('admin_transactions') }}"
+                    class="pib-service-card"
+                >
+                    <div class="service-icon">≡</div>
+
+                    <h3>All Transactions</h3>
+
+                    <p>
+                        View deposits, withdrawals and transfers.
+                    </p>
+
+                    <span>Open →</span>
+                </a>
+
+
+                <a
+                    href="{{ url_for('create_loan_page') }}"
+                    class="pib-service-card"
+                >
+                    <div class="service-icon">%</div>
+
+                    <h3>Loans</h3>
+
+                    <p>
+                        Create loans and calculate payment schedules.
+                    </p>
+
+                    <span>Open →</span>
+                </a>
+
+            </div>
+
+        </section>
+
+
+        <section class="admin-section">
+
+            <div class="admin-section-heading">
+                <h2>System Administration</h2>
+                <p>Manage login users and access permissions.</p>
+            </div>
+
+            <div class="pib-service-grid">
+
+                <a
+                    href="{{ url_for('user_management_page') }}"
+                    class="pib-service-card"
+                >
+                    <div class="service-icon">U</div>
+
+                    <h3>User Management</h3>
+
+                    <p>
+                        Activate, deactivate and review system users.
+                    </p>
+
+                    <span>Open →</span>
+                </a>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <footer class="pib-footer">
+
+        <p>
+            © 2026 Palestine Investment Bank — Admin Portal
+        </p>
+
+    </footer>
+
+</body>
+</html>

@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Banking System</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
+</head>
+
+<body>
+
+<header class="pib-header">
+
+    <div class="pib-brand">
+
+        <div class="pib-logo-mark">
+            PIB
+        </div>
+
+        <div>
+
+            <h1>Palestine Investment Bank</h1>
+
+            <p>بنك الاستثمار الفلسطيني</p>
+
+        </div>
+
+    </div>
+
+    <nav class="pib-nav">
+
+        <a href="{{ url_for('dashboard') }}">Home</a>
+
+        <a href="{{ url_for('accounts_page') }}">Accounts</a>
+
+        <a href="{{ url_for('transactions_page') }}">Transactions</a>
+
+        <a href="{{ url_for('create_loan_page') }}">Loans</a>
+
+    </nav>
+
+    <div class="header-user">
+
+        <span>
+            {{ session['username'] }}
+        </span>
+
+        <a href="{{ url_for('logout') }}" class="logout-button">
+            Logout
+        </a>
+
+    </div>
+
+</header>
+
+
+<section class="hero-section">
+
+    <div class="hero-overlay">
+
+        <div class="hero-content">
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<main class="dashboard-content">
+
+    <section class="section-heading">
+
+        <p class="section-label">
+            BANKING SERVICES
+        </p>
+
+        <h2>
+            Choose a Banking Service
+        </h2>
+
+        <p>
+            Select one of the services below.
+        </p>
+
+    </section>
+
+    <section class="pib-service-grid">
+
+        <a href="{{ url_for('deposit_page') }}" class="pib-service-card">
+
+            <div class="service-icon">$</div>
+
+            <h3>Deposit</h3>
+
+            <p>Add money into your account.</p>
+
+            <span>Open →</span>
+
+        </a>
+
+
+        <a href="{{ url_for('withdraw_page') }}" class="pib-service-card">
+
+            <div class="service-icon">−</div>
+
+            <h3>Withdraw</h3>
+
+            <p>Withdraw money securely.</p>
+
+            <span>Open →</span>
+
+        </a>
+
+
+        <a href="{{ url_for('transfer_page') }}" class="pib-service-card">
+
+            <div class="service-icon">↔</div>
+
+            <h3>Transfer</h3>
+
+            <p>Transfer funds between accounts.</p>
+
+            <span>Open →</span>
+
+        </a>
+
+
+        <a href="{{ url_for('accounts_page') }}" class="pib-service-card">
+
+            <div class="service-icon">▣</div>
+
+            <h3>Accounts</h3>
+
+            <p>View account information.</p>
+
+            <span>Open →</span>
+
+        </a>
+
+
+        <a href="{{ url_for('transactions_page') }}" class="pib-service-card">
+
+            <div class="service-icon">≡</div>
+
+            <h3>Transactions</h3>
+
+            <p>Review transaction history.</p>
+
+            <span>Open →</span>
+
+        </a>
+
+
+        <a href="{{ url_for('create_loan_page') }}" class="pib-service-card">
+
+            <div class="service-icon">%</div>
+
+            <h3>Loans</h3>
+
+            <p>Create and calculate loans.</p>
+
+            <span>Open →</span>
+
+        </a>
+
+    </section>
+
+</main>
+
+<footer class="pib-footer">
+
+    <p>
+        © 2026 Palestine Investment Bank
+    </p>
+
+</footer>
+
+</body>
+</html>

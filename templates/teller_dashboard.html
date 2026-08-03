@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Teller Dashboard</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
+</head>
+
+<body class="service-page">
+
+    <header class="pib-header">
+
+        <div class="pib-brand">
+
+            <div class="pib-logo-mark">
+                PIB
+            </div>
+
+            <div>
+                <h1>Palestine Investment Bank</h1>
+                <p>Teller Portal</p>
+            </div>
+
+        </div>
+
+        <div class="header-user">
+
+            <span>
+                Teller: {{ session['username'] }}
+            </span>
+
+            <a
+                href="{{ url_for('logout') }}"
+                class="logout-button"
+            >
+                Logout
+            </a>
+
+        </div>
+
+    </header>
+
+
+    <main class="dashboard-content">
+
+        <section class="section-heading">
+
+            <p class="section-label">
+                TELLER SERVICES
+            </p>
+
+            <h2>
+                Teller Dashboard
+            </h2>
+
+            <p>
+                Manage customers and perform banking operations.
+            </p>
+
+        </section>
+
+
+        <section class="admin-section">
+
+            <div class="admin-section-heading">
+
+                <h2>Customer Management</h2>
+
+                <p>
+                    Register new customers and create bank accounts.
+                </p>
+
+            </div>
+
+            <div class="pib-service-grid">
+
+                <a
+                    href="{{ url_for('create_account_page') }}"
+                    class="pib-service-card"
+                >
+                    <div class="service-icon">+</div>
+
+                    <h3>Create Customer</h3>
+
+                    <p>
+                        Register a new customer and account.
+                    </p>
+
+                    <span>Open →</span>
+                </a>
+
+            </div>
+
+        </section>
+
+
+        <section class="admin-section">
+
+            <div class="admin-section-heading">
+
+                <h2>Bank Operations</h2>
+
+                <p>
+                    Perform customer transactions.
+                </p>
+
+            </div>
+
+            <div class="pib-service-grid">
+
+                <a
+                    href="{{ url_for('deposit_page') }}"
+                    class="pib-service-card"
+                >
+                    <div class="service-icon">$</div>
+
+                    <h3>Deposit</h3>
+
+                    <p>
+                        Deposit money into a customer account.
+                    </p>
+
+                    <span>Open →</span>
+                </a>
+
+
+                <a
+                    href="{{ url_for('withdraw_page') }}"
+                    class="pib-service-card"
+                >
+                    <div class="service-icon">−</div>
+
+                    <h3>Withdraw</h3>
+
+                    <p>
+                        Withdraw money from a customer account.
+                    </p>
+
+                    <span>Open →</span>
+                </a>
+
+
+                <a
+                    href="{{ url_for('transfer_page') }}"
+                    class="pib-service-card"
+                >
+                    <div class="service-icon">↔</div>
+
+                    <h3>Transfer</h3>
+
+                    <p>
+                        Transfer funds between customer accounts.
+                    </p>
+
+                    <span>Open →</span>
+                </a>
+
+            </div>
+
+        </section>
+
+
+        <section class="admin-section">
+
+            <div class="admin-section-heading">
+
+                <h2>Reports and Records</h2>
+
+                <p>
+                    Review all accounts and transactions.
+                </p>
+
+            </div>
+
+            <div class="pib-service-grid">
+
+                <a
+                    href="{{ url_for('teller_accounts') }}"
+                    class="pib-service-card"
+                >
+                    <div class="service-icon">▣</div>
+
+                    <h3>All Accounts</h3>
+
+                    <p>
+                        View customer accounts and balances.
+                    </p>
+
+                    <span>Open →</span>
+                </a>
+
+
+                <a
+                    href="{{ url_for('teller_transactions') }}"
+                    class="pib-service-card"
+                >
+                    <div class="service-icon">≡</div>
+
+                    <h3>All Transactions</h3>
+
+                    <p>
+                        Review bank transaction records.
+                    </p>
+
+                    <span>Open →</span>
+                </a>
+
+
+                <a
+                    href="{{ url_for('create_loan_page') }}"
+                    class="pib-service-card"
+                >
+                    <div class="service-icon">%</div>
+
+                    <h3>Loans</h3>
+
+                    <p>
+                        Create loans and payment schedules.
+                    </p>
+
+                    <span>Open →</span>
+                </a>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <footer class="pib-footer">
+
+        <p>
+            © 2026 Palestine Investment Bank — Teller Portal
+        </p>
+
+    </footer>
+
+</body>
+</html>

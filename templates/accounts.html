@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>View Accounts</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
+</head>
+
+<body class="service-page">
+
+    <header class="pib-header">
+
+        <div class="pib-brand">
+
+            <div class="pib-logo-mark">
+                PIB
+            </div>
+
+            <div>
+                <h1>Palestine Investment Bank</h1>
+                <p>بنك الاستثمار الفلسطيني</p>
+            </div>
+
+        </div>
+
+        <div class="header-user">
+
+            <span>{{ session['username'] }}</span>
+
+            <a href="{{ url_for('logout') }}" class="logout-button">
+                Logout
+            </a>
+
+        </div>
+
+    </header>
+
+
+    <main class="table-container">
+
+        <div class="table-card">
+
+            <div class="service-form-heading">
+
+                <div class="service-form-icon">
+                    🏦
+                </div>
+
+                <div>
+
+                    <p class="service-form-label">
+                        CUSTOMER ACCOUNTS
+                    </p>
+
+                    <h2>
+                        Bank Accounts
+                    </h2>
+
+                    <p>
+                        View all customer accounts and their current balances.
+                    </p>
+
+                </div>
+
+            </div>
+
+            {% if accounts %}
+
+            <table class="data-table">
+
+                <thead>
+
+                    <tr>
+
+                        <th>Account Number</th>
+                        <th>Customer ID</th>
+                        <th>Account Type</th>
+                        <th>Balance</th>
+                        <th>Status</th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    {% for account in accounts %}
+
+                    <tr>
+
+                        <td>{{ account[0] }}</td>
+
+                        <td>{{ account[1] }}</td>
+
+                        <td>{{ account[2] }}</td>
+
+                        <td>${{ "%.2f"|format(account[3]) }}</td>
+
+                        <td>
+
+                            {% if account[4] %}
+
+                                <span class="status-active">
+                                    Active
+                                </span>
+
+                            {% else %}
+
+                                <span class="status-inactive">
+                                    Inactive
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+            {% else %}
+
+                <p class="empty-message">
+                    No accounts found.
+                </p>
+
+            {% endif %}
+
+            <a
+                href="{{ url_for('dashboard') }}"
+                class="service-back-link"
+            >
+                ← Return to Dashboard
+            </a>
+
+        </div>
+
+    </main>
+
+</body>
+</html>
