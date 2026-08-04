@@ -109,6 +109,7 @@
                             <th>Customer ID</th>
                             <th>Status</th>
                             <th>Actions</th>
+                            <th>Financial Details</th>
                         </tr>
                     </thead>
 
@@ -118,9 +119,13 @@
 
                             <tr>
 
-                                <td>{{ user[0] }}</td>
+                                <td>
+                                    {{ user[0] }}
+                                </td>
 
-                                <td>{{ user[1] }}</td>
+                                <td>
+                                    {{ user[1] }}
+                                </td>
 
                                 <td>
                                     <span class="role-badge role-{{ user[2]|lower }}">
@@ -149,6 +154,7 @@
                                     {% endif %}
 
                                 </td>
+
 
                                 <td class="user-actions">
 
@@ -197,6 +203,28 @@
                                                 Delete
                                             </button>
                                         </form>
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <td>
+
+                                    {% if user[2] == "Customer" and user[4] is not none %}
+
+                                        <a
+                                            href="{{ url_for('customer_financial_details', user_id=user[0]) }}"
+                                            class="action-button view-button"
+                                        >
+                                            View
+                                        </a>
+
+                                    {% else %}
+
+                                        <span class="not-available">
+                                            —
+                                        </span>
 
                                     {% endif %}
 

@@ -776,3 +776,96 @@ def get_accounts_by_type():
     connection.close()
     
     return results 
+
+def get_recent_transactions(limit=5):
+    connection = create_connection()
+    cursor = connection.cursor()
+    
+    cursor.execute("""
+        SELECT 
+            transaction_id,
+            account_number,
+            transaction_type,
+            amount,
+            status,
+            date_created
+        FROM transactions
+        ORDER BY transaction_id DESC
+        LIMIT ?
+    """, (limit,))
+    
+    transactions = cursor.fetchall()
+    connection.close()
+    
+    return transactions 
+
+
+def get_top_account_balances(limit=5):
+    connection = create_connection()
+    cursor = connection.cursor()
+    
+    cursor.execute("""
+        SELECT
+            accounts.account_number,
+            customers.full_name,
+            accounts.account_type,
+            accounts.balance
+        FROM accounts
+        INNER JOIN customers
+            ON accounts.customer_id = customers.customer_id
+        ORDER BY accounts.balance DESC
+        LIMIT ?
+    """, (limit,)) 
+    
+    accounts = cursor.fetchall()
+    connection.close()
+    return accounts 
+
+def get_customer_financial_details(user_id):
+    connection = create_connection()
+    cursor = connection.cursor()
+    
+    cursor.execute("""
+        SELECT 
+            users.user_id,
+            users.username,
+            users.customer_id,
+            customers.full_name,
+            accounts.account_number,
+            accounts.account_type,
+            accounts.balance,
+            accounts.is_active
+        FROM users
+        INNER JOIN customers
+            ON users.customer_id = customers.customer_id
+        INNER JOIN accounts 
+            ON customers.customer_id = accounts.customer_id
+        WHERE users.user_id = ?
+    """,(user_id,))
+    
+    customer_details = cursor.fetchone()
+    
+    if customer_details is None:
+        connection.close()
+        return None, []
+    
+    account_number = customer_details[4]
+    
+    cursor.execute("""
+        SELECT
+            transaction_id,
+            transaction_type,
+            amount,
+            status,
+            date_created
+        FROM transactions
+        WHERE account_number = ?
+        ORDER BY transaction_id DESC
+    """, (account_number,))
+    
+    transactions = cursor.fetchall()
+    connection.close()
+    return customer_details, transactions
+
+    
+    

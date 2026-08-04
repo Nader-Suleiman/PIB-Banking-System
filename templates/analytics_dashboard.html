@@ -2,7 +2,6 @@
 <html lang="en">
 
 <head>
-
     <meta charset="UTF-8">
 
     <meta
@@ -10,7 +9,7 @@
         content="width=device-width, initial-scale=1.0"
     >
 
-    <title>Analytics Dashboard</title>
+    <title>Executive Dashboard</title>
 
     <link
         rel="stylesheet"
@@ -18,90 +17,86 @@
     >
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
 </head>
 
-<body class="service-page">
+<body class="executive-page">
 
-<header class="pib-header">
+    <header class="executive-header">
 
-    <div class="pib-brand">
+        <div class="executive-brand">
 
-        <div class="pib-logo-mark">
-            PIB
-        </div>
-
-        <div>
-
-            <h1>
-                Palestine Investment Bank
-            </h1>
-
-            <p>
-                Analytics Dashboard
-            </p>
-
-        </div>
-
-    </div>
-
-    <div class="header-user">
-
-        <span>
-            Admin: {{ session['username'] }}
-        </span>
-
-        <a
-            href="{{ url_for('logout') }}"
-            class="logout-button"
-        >
-            Logout
-        </a>
-
-    </div>
-
-</header>
-
-
-<main class="dashboard-content">
-
-    <section class="analytics-hero">
-
-        <div>
-
-            <p class="section-label">
-                BUSINESS INTELLIGENCE
-            </p>
-
-            <h2>
-                Bank Analytics Dashboard
-            </h2>
-
-            <p>
-                Monitor customers, accounts, transactions,
-                loans and overall banking activity.
-            </p>
-
-        </div>
-
-        <div class="analytics-update">
-            Live database overview
-        </div>
-
-    </section>
-
-
-    <section class="analytics-grid">
-
-        <div class="analytics-summary-card">
-
-            <div class="analytics-card-icon">
-                C
+            <div class="executive-logo">
+                PIB
             </div>
 
             <div>
+                <h1>Palestine Investment Bank</h1>
+                <p>Executive Business Intelligence Dashboard</p>
+            </div>
 
-                <p>Total Customers</p>
+        </div>
+
+        <div class="executive-header-actions">
+
+            <div class="live-status">
+                <span class="live-dot"></span>
+                Live Database
+            </div>
+
+            <span class="executive-user">
+                Admin: {{ session['username'] }}
+            </span>
+
+            <a
+                href="{{ url_for('logout') }}"
+                class="executive-logout"
+            >
+                Logout
+            </a>
+
+        </div>
+
+    </header>
+
+
+    <main class="executive-container">
+
+        <section class="executive-intro">
+
+            <div>
+
+                <p class="executive-eyebrow">
+                    BANK PERFORMANCE OVERVIEW
+                </p>
+
+                <h2>
+                    Executive Dashboard
+                </h2>
+
+                <p>
+                    Monitor customer activity, account performance,
+                    transactions, loans, and system usage.
+                </p>
+
+            </div>
+
+            <a
+                href="{{ url_for('admin_dashboard') }}"
+                class="executive-back-button"
+            >
+                Return to Admin Dashboard
+            </a>
+
+        </section>
+
+
+        <section class="executive-kpi-grid">
+
+            <article class="executive-kpi-card">
+
+                <p class="kpi-label">
+                    TOTAL CUSTOMERS
+                </p>
 
                 <h3>
                     {{ summary.total_customers }}
@@ -111,89 +106,65 @@
                     Registered customer profiles
                 </span>
 
-            </div>
-
-        </div>
+            </article>
 
 
-        <div class="analytics-summary-card">
+            <article class="executive-kpi-card">
 
-            <div class="analytics-card-icon">
-                A
-            </div>
-
-            <div>
-
-                <p>Total Accounts</p>
+                <p class="kpi-label">
+                    TOTAL ACCOUNTS
+                </p>
 
                 <h3>
                     {{ summary.total_accounts }}
                 </h3>
 
                 <span>
-                    Bank accounts in the system
+                    Customer banking accounts
                 </span>
 
-            </div>
-
-        </div>
+            </article>
 
 
-        <div class="analytics-summary-card">
+            <article class="executive-kpi-card">
 
-            <div class="analytics-card-icon">
-                $
-            </div>
-
-            <div>
-
-                <p>Total Balance</p>
+                <p class="kpi-label">
+                    TOTAL BALANCE
+                </p>
 
                 <h3>
-                    ${{ "%.2f"|format(summary.total_balance) }}
+                    ${{ "{:,.2f}".format(summary.total_balance) }}
                 </h3>
 
                 <span>
-                    Combined customer balances
+                    Combined account balances
                 </span>
 
-            </div>
-
-        </div>
+            </article>
 
 
-        <div class="analytics-summary-card">
+            <article class="executive-kpi-card">
 
-            <div class="analytics-card-icon">
-                T
-            </div>
-
-            <div>
-
-                <p>Total Transactions</p>
+                <p class="kpi-label">
+                    TOTAL TRANSACTIONS
+                </p>
 
                 <h3>
                     {{ summary.total_transactions }}
                 </h3>
 
                 <span>
-                    Recorded banking transactions
+                    Recorded system transactions
                 </span>
 
-            </div>
-
-        </div>
+            </article>
 
 
-        <div class="analytics-summary-card">
+            <article class="executive-kpi-card">
 
-            <div class="analytics-card-icon">
-                L
-            </div>
-
-            <div>
-
-                <p>Total Loans</p>
+                <p class="kpi-label">
+                    TOTAL LOANS
+                </p>
 
                 <h3>
                     {{ summary.total_loans }}
@@ -203,122 +174,245 @@
                     Loan records in the system
                 </span>
 
-            </div>
-
-        </div>
+            </article>
 
 
-        <div class="analytics-summary-card">
+            <article class="executive-kpi-card">
 
-            <div class="analytics-card-icon">
-                U
-            </div>
-
-            <div>
-
-                <p>Active Users</p>
+                <p class="kpi-label">
+                    ACTIVE USERS
+                </p>
 
                 <h3>
                     {{ summary.active_users }}
                 </h3>
 
                 <span>
-                    Users currently able to log in
+                    Users with active access
                 </span>
 
-            </div>
+            </article>
 
-        </div>
-
-    </section>
+        </section>
 
 
-    <section class="analytics-chart-section">
+        <section class="executive-section">
 
-        <div class="analytics-section-heading">
+            <div class="executive-section-heading">
 
-            <p class="section-label">
-                DATA VISUALIZATION
-            </p>
+                <div>
 
-            <h2>
-                Banking Activity Overview
-            </h2>
-
-            <p>
-                Visual summaries of transaction activity and account types.
-            </p>
-
-        </div>
-
-
-        <div class="chart-container">
-
-            <div class="chart-card">
-
-                <div class="chart-card-heading">
-
-                    <h3>
-                        Transactions by Type
-                    </h3>
-
-                    <p>
-                        Compare deposits, withdrawals and transfers.
+                    <p class="executive-eyebrow">
+                        BUSINESS ANALYTICS
                     </p>
 
-                </div>
-
-                <div class="chart-wrapper">
-
-                    <canvas id="transactionChart"></canvas>
+                    <h2>
+                        Operational Overview
+                    </h2>
 
                 </div>
 
             </div>
 
 
-            <div class="chart-card">
+            <div class="executive-chart-grid">
 
-                <div class="chart-card-heading">
+                <article class="executive-chart-card">
 
-                    <h3>
-                        Accounts by Type
-                    </h3>
+                    <div class="executive-chart-heading">
 
-                    <p>
-                        Distribution of checking and savings accounts.
+                        <div>
+
+                            <h3>
+                                Transactions by Type
+                            </h3>
+
+                            <p>
+                                Distribution of deposits, withdrawals,
+                                and transfers.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                    <div class="executive-chart-wrapper">
+                        <canvas id="transactionChart"></canvas>
+                    </div>
+
+                </article>
+
+
+                <article class="executive-chart-card">
+
+                    <div class="executive-chart-heading">
+
+                        <div>
+
+                            <h3>
+                                Account Distribution
+                            </h3>
+
+                            <p>
+                                Breakdown of customer accounts by type.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                    <div class="executive-chart-wrapper">
+                        <canvas id="accountChart"></canvas>
+                    </div>
+
+                </article>
+
+            </div>
+
+        </section>
+
+
+        <section class="executive-section">
+
+            <div class="executive-section-heading">
+
+                <div>
+
+                    <p class="executive-eyebrow">
+                        MANAGEMENT SUMMARY
                     </p>
 
-                </div>
-
-                <div class="chart-wrapper">
-
-                    <canvas id="accountChart"></canvas>
+                    <h2>
+                        Executive Insights
+                    </h2>
 
                 </div>
 
             </div>
 
-        </div>
 
+            <div class="executive-insights">
+
+                <div class="executive-insight-item">
+                    <span></span>
+
+                    <p>
+                        Total customer balances currently equal
+                        <strong>
+                            ${{ "{:,.2f}".format(summary.total_balance) }}
+                        </strong>.
+                    </p>
+                </div>
+
+
+                <div class="executive-insight-item">
+                    <span></span>
+
+                    <p>
+                        The system currently manages
+                        <strong>{{ summary.total_accounts }}</strong>
+                        customer accounts.
+                    </p>
+                </div>
+
+
+                <div class="executive-insight-item">
+                    <span></span>
+
+                    <p>
+                        A total of
+                        <strong>{{ summary.total_transactions }}</strong>
+                        transactions have been recorded.
+                    </p>
+                </div>
+
+
+                <div class="executive-insight-item">
+                    <span></span>
+
+                    <p>
+                        There are
+                        <strong>{{ summary.active_users }}</strong>
+                        active users with system access.
+                    </p>
+                </div>
+
+            </div>
+
+        </section>
+
+        <section class="executive-section">
+
+            <div class="executive-section-heading">
+
+                <div>
+
+                    <p class="executive-eyebrow">
+                        OPERATIONAL ACTIVITY
+                    </p>
+                    
+                    <h2>
+                        Recent Transactions
+                    </h2>
+                </div>
+            </div>
+
+        <div class="executive-table-card">
+            <table class="executive-table">
+
+                <thead>
+
+                    <tr>
+
+                        <th>Transactions ID</th>
+                        
+                        <th>Account</th>
+
+                        <th>Type</th>
+
+                        <th>Amount</th> 
+                        
+                        <th>Status</th>
+
+                        <th>Date</th>
+                    
+                    </tr>
+
+                </thead>
+                <tbody>
+
+                    {% for transaction in recent_transactions %}
+                    <tr>
+                        <td>{{ transaction[0] }}</td>
+
+                        <td>{{ transaction[1] }}</td>
+
+                        <td>{{ transaction[2] }}</td>
+
+                        <td>${{ "%.2f"|format(transaction[3]) }}</td>
+
+                        <td>{{ transaction[4] }}</td>
+
+                        <td>{{ transaction[5] }}</td>
+
+                    </tr>
+
+                    {% endfor %}
+                </tbody>
+
+            </table>
+        </div>
     </section>
 
-
-    <a
-        href="{{ url_for('admin_dashboard') }}"
-        class="service-back-link"
-    >
-        ← Return to Admin Dashboard
-    </a>
-
-</main>
+    </main>
 
 
-<script>
+    <script>
 
-    new Chart(
-        document.getElementById("transactionChart"),
-        {
+        const transactionContext =
+            document.getElementById("transactionChart");
+
+        new Chart(transactionContext, {
             type: "bar",
 
             data: {
@@ -328,8 +422,9 @@
                     {
                         label: "Transactions",
                         data: {{ transaction_values | tojson }},
-                        borderWidth: 1,
-                        borderRadius: 8
+                        borderWidth: 0,
+                        borderRadius: 6,
+                        maxBarThickness: 58
                     }
                 ]
             },
@@ -345,21 +440,32 @@
                 },
 
                 scales: {
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    },
+
                     y: {
                         beginAtZero: true,
+
                         ticks: {
                             precision: 0
+                        },
+
+                        grid: {
+                            color: "rgba(15, 23, 42, 0.08)"
                         }
                     }
                 }
             }
-        }
-    );
+        });
 
 
-    new Chart(
-        document.getElementById("accountChart"),
-        {
+        const accountContext =
+            document.getElementById("accountChart");
+
+        new Chart(accountContext, {
             type: "doughnut",
 
             data: {
@@ -368,7 +474,8 @@
                 datasets: [
                     {
                         data: {{ account_values | tojson }},
-                        borderWidth: 2
+                        borderWidth: 3,
+                        borderColor: "#ffffff"
                     }
                 ]
             },
@@ -376,19 +483,22 @@
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                cutout: "66%",
 
                 plugins: {
                     legend: {
-                        position: "bottom"
+                        position: "bottom",
+
+                        labels: {
+                            padding: 18,
+                            usePointStyle: true
+                        }
                     }
-                },
-
-                cutout: "62%"
+                }
             }
-        }
-    );
+        });
 
-</script>
+    </script>
 
 </body>
 

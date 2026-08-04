@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
 
@@ -14,7 +15,10 @@
         rel="stylesheet"
         href="{{ url_for('static', filename='style.css') }}"
     >
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
+
 
 <body class="service-page">
 
@@ -32,6 +36,7 @@
             </div>
 
         </div>
+
 
         <div class="header-user">
 
@@ -53,6 +58,8 @@
 
     <main class="dashboard-content">
 
+        <!-- ADMIN DASHBOARD INTRODUCTION -->
+
         <section class="section-heading">
 
             <p class="section-label">
@@ -64,18 +71,29 @@
             </h2>
 
             <p>
-                Manage customers, staff, accounts and banking operations.
+                Manage customers, staff, banking operations,
+                and monitor the bank's performance.
             </p>
 
         </section>
 
 
+        <!-- CUSTOMER MANAGEMENT -->
+
         <section class="admin-section">
 
             <div class="admin-section-heading">
-                <h2>Customer Management</h2>
-                <p>Create customers and manage staff accounts.</p>
+
+                <h2>
+                    Customer and Staff Management
+                </h2>
+
+                <p>
+                    Create customers and manage employee access.
+                </p>
+
             </div>
+
 
             <div class="pib-service-grid">
 
@@ -83,15 +101,21 @@
                     href="{{ url_for('create_account_page') }}"
                     class="pib-service-card"
                 >
-                    <div class="service-icon">+</div>
+                    <div class="service-icon">
+                        +
+                    </div>
 
-                    <h3>Create Customer</h3>
+                    <h3>
+                        Create Customer
+                    </h3>
 
                     <p>
                         Register a customer and create a bank account.
                     </p>
 
-                    <span>Open →</span>
+                    <span>
+                        Open →
+                    </span>
                 </a>
 
 
@@ -99,15 +123,21 @@
                     href="{{ url_for('create_teller_page') }}"
                     class="pib-service-card"
                 >
-                    <div class="service-icon">T</div>
+                    <div class="service-icon">
+                        T
+                    </div>
 
-                    <h3>Create Teller</h3>
+                    <h3>
+                        Create Teller
+                    </h3>
 
                     <p>
                         Create a new teller login account.
                     </p>
 
-                    <span>Open →</span>
+                    <span>
+                        Open →
+                    </span>
                 </a>
 
 
@@ -115,166 +145,422 @@
                     href="{{ url_for('create_admin_page') }}"
                     class="pib-service-card"
                 >
-                    <div class="service-icon">A</div>
+                    <div class="service-icon">
+                        A
+                    </div>
 
-                    <h3>Create Admin</h3>
+                    <h3>
+                        Create Admin
+                    </h3>
 
                     <p>
                         Create another administrator account.
                     </p>
 
-                    <span>Open →</span>
+                    <span>
+                        Open →
+                    </span>
                 </a>
 
             </div>
 
         </section>
 
+        <!-- BANK PERFORMANCE OVERVIEW -->
 
-        <section class="admin-section">
+        <section class="executive-section">
 
-            <div class="admin-section-heading">
-                <h2>Bank Operations</h2>
-                <p>Perform customer banking transactions.</p>
-            </div>
+            <div class="executive-section-heading">
 
-            <div class="pib-service-grid">
+                <p class="executive-eyebrow">
+                    BANK PERFORMANCE OVERVIEW
+                </p>
 
-                <a
-                    href="{{ url_for('deposit_page') }}"
-                    class="pib-service-card"
-                >
-                    <div class="service-icon">$</div>
+                <h2>
+                    Key Banking Metrics
+                </h2>
 
-                    <h3>Deposit</h3>
-
-                    <p>
-                        Deposit money into a customer account.
-                    </p>
-
-                    <span>Open →</span>
-                </a>
-
-
-                <a
-                    href="{{ url_for('withdraw_page') }}"
-                    class="pib-service-card"
-                >
-                    <div class="service-icon">−</div>
-
-                    <h3>Withdraw</h3>
-
-                    <p>
-                        Withdraw money from a customer account.
-                    </p>
-
-                    <span>Open →</span>
-                </a>
-
-
-                <a
-                    href="{{ url_for('transfer_page') }}"
-                    class="pib-service-card"
-                >
-                    <div class="service-icon">↔</div>
-
-                    <h3>Transfer</h3>
-
-                    <p>
-                        Transfer funds between customer accounts.
-                    </p>
-
-                    <span>Open →</span>
-                </a>
+                <p>
+                    Live information retrieved from the banking database.
+                </p>
 
             </div>
 
-        </section>
 
+            <div class="executive-kpi-grid">
 
-        <section class="admin-section">
+                <article class="executive-kpi-card">
 
-            <div class="admin-section-heading">
-                <h2>Reports and Records</h2>
-                <p>Review bank-wide account and transaction information.</p>
-            </div>
-
-            <div class="pib-service-grid">
-
-                <a
-                    href="{{ url_for('admin_accounts') }}"
-                    class="pib-service-card"
-                >
-                    <div class="service-icon">▣</div>
-
-                    <h3>All Accounts</h3>
-
-                    <p>
-                        View all customer accounts and balances.
+                    <p class="kpi-label">
+                        TOTAL CUSTOMERS
                     </p>
 
-                    <span>Open →</span>
-                </a>
+                    <h3>
+                        {{ summary.total_customers }}
+                    </h3>
+
+                    <span>
+                        Registered customer profiles
+                    </span>
+
+                </article>
 
 
-                <a
-                    href="{{ url_for('admin_transactions') }}"
-                    class="pib-service-card"
-                >
-                    <div class="service-icon">≡</div>
+                <article class="executive-kpi-card">
 
-                    <h3>All Transactions</h3>
-
-                    <p>
-                        View deposits, withdrawals and transfers.
+                    <p class="kpi-label">
+                        TOTAL ACCOUNTS
                     </p>
 
-                    <span>Open →</span>
-                </a>
+                    <h3>
+                        {{ summary.total_accounts }}
+                    </h3>
+
+                    <span>
+                        Customer banking accounts
+                    </span>
+
+                </article>
 
 
-                <a
-                    href="{{ url_for('create_loan_page') }}"
-                    class="pib-service-card"
-                >
-                    <div class="service-icon">%</div>
+                <article class="executive-kpi-card">
 
-                    <h3>Loans</h3>
-
-                    <p>
-                        Create loans and calculate payment schedules.
+                    <p class="kpi-label">
+                        TOTAL BALANCE
                     </p>
 
-                    <span>Open →</span>
-                </a>
+                    <h3>
+                        ${{ "{:,.2f}".format(summary.total_balance) }}
+                    </h3>
+
+                    <span>
+                        Combined customer balances
+                    </span>
+
+                </article>
 
 
-                <a
-                    href="{{ url_for('analytics_dashboard') }}"
-                    class="pib-service-card"
-                >
-                    <div class="service-icon">📊</div>
+                <article class="executive-kpi-card">
 
-                    <h3>Analytics</h3>
-
-                    <p>
-                        View banking statistics, trends and reports.
+                    <p class="kpi-label">
+                        TOTAL TRANSACTIONS
                     </p>
 
-                    <span>Open →</span>
-                </a>
+                    <h3>
+                        {{ summary.total_transactions }}
+                    </h3>
+
+                    <span>
+                        Recorded banking transactions
+                    </span>
+
+                </article>
+
+
+                <article class="executive-kpi-card">
+
+                    <p class="kpi-label">
+                        TOTAL LOANS
+                    </p>
+
+                    <h3>
+                        {{ summary.total_loans }}
+                    </h3>
+
+                    <span>
+                        Loan records in the system
+                    </span>
+
+                </article>
+
+
+                <article class="executive-kpi-card">
+
+                    <p class="kpi-label">
+                        ACTIVE USERS
+                    </p>
+
+                    <h3>
+                        {{ summary.active_users }}
+                    </h3>
+
+                    <span>
+                        Users with active system access
+                    </span>
+
+                </article>
 
             </div>
 
         </section>
 
 
+        <!-- BUSINESS ANALYTICS -->
+
+        <section class="executive-section">
+
+            <div class="executive-section-heading">
+
+                <p class="executive-eyebrow">
+                    BUSINESS ANALYTICS
+                </p>
+
+                <h2>
+                    Operational Overview
+                </h2>
+
+                <p>
+                    Visual summaries of transactions and customer accounts.
+                </p>
+
+            </div>
+
+
+            <div class="executive-chart-grid">
+
+                <article class="executive-chart-card">
+
+                    <div class="executive-chart-heading">
+
+                        <h3>
+                            Transactions by Type
+                        </h3>
+
+                        <p>
+                            Distribution of deposits, withdrawals,
+                            and transfers.
+                        </p>
+
+                    </div>
+
+
+                    <div class="executive-chart-wrapper">
+
+                        <canvas id="transactionChart"></canvas>
+
+                    </div>
+
+                </article>
+
+
+                <article class="executive-chart-card">
+
+                    <div class="executive-chart-heading">
+
+                        <h3>
+                            Account Distribution
+                        </h3>
+
+                        <p>
+                            Breakdown of customer accounts by type.
+                        </p>
+
+                    </div>
+
+
+                    <div class="executive-chart-wrapper">
+
+                        <canvas id="accountChart"></canvas>
+
+                    </div>
+
+                </article>
+
+            </div>
+
+        </section>
+
+
+        <!-- EXECUTIVE INSIGHTS -->
+
+        <section class="executive-section">
+
+            <div class="executive-section-heading">
+
+                <p class="executive-eyebrow">
+                    MANAGEMENT SUMMARY
+                </p>
+
+                <h2>
+                    Executive Insights
+                </h2>
+
+            </div>
+
+
+            <div class="executive-insights">
+
+                <div class="executive-insight-item">
+
+                    <span></span>
+
+                    <p>
+                        Total customer balances currently equal
+                        <strong>
+                            ${{ "{:,.2f}".format(summary.total_balance) }}
+                        </strong>.
+                    </p>
+
+                </div>
+
+
+                <div class="executive-insight-item">
+
+                    <span></span>
+
+                    <p>
+                        The banking system currently manages
+                        <strong>
+                            {{ summary.total_accounts }}
+                        </strong>
+                        customer accounts.
+                    </p>
+
+                </div>
+
+
+                <div class="executive-insight-item">
+
+                    <span></span>
+
+                    <p>
+                        A total of
+                        <strong>
+                            {{ summary.total_transactions }}
+                        </strong>
+                        transactions have been recorded.
+                    </p>
+
+                </div>
+
+
+                <div class="executive-insight-item">
+
+                    <span></span>
+
+                    <p>
+                        There are currently
+                        <strong>
+                            {{ summary.active_users }}
+                        </strong>
+                        active users with system access.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- RECENT TRANSACTIONS -->
+
+        <section class="executive-section">
+
+            <div class="executive-section-heading">
+
+                <p class="executive-eyebrow">
+                    OPERATIONAL ACTIVITY
+                </p>
+
+                <h2>
+                    Recent Transactions
+                </h2>
+
+                <p>
+                    The five most recently recorded banking transactions.
+                </p>
+
+            </div>
+
+
+            <div class="executive-table-card">
+
+                {% if recent_transactions %}
+
+                    <table class="executive-table">
+
+                        <thead>
+
+                            <tr>
+                                <th>Transaction ID</th>
+                                <th>Account</th>
+                                <th>Type</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody>
+
+                            {% for transaction in recent_transactions %}
+
+                                <tr>
+
+                                    <td>
+                                        {{ transaction[0] }}
+                                    </td>
+
+                                    <td>
+                                        {{ transaction[1] }}
+                                    </td>
+
+                                    <td>
+                                        {{ transaction[2] }}
+                                    </td>
+
+                                    <td>
+                                        ${{ "%.2f"|format(transaction[3]) }}
+                                    </td>
+
+                                    <td>
+                                        {{ transaction[4] }}
+                                    </td>
+
+                                    <td>
+                                        {{ transaction[5] }}
+                                    </td>
+
+                                </tr>
+
+                            {% endfor %}
+
+                        </tbody>
+
+                    </table>
+
+                {% else %}
+
+                    <p class="empty-message">
+                        No transactions have been recorded yet.
+                    </p>
+
+                {% endif %}
+
+            </div>
+
+        </section>
+
+
+        <!-- USER MANAGEMENT -->
+
         <section class="admin-section">
 
             <div class="admin-section-heading">
-                <h2>System Administration</h2>
-                <p>Manage login users and access permissions.</p>
+
+                <h2>
+                    System Administration
+                </h2>
+
+                <p>
+                    Manage login users and system access permissions.
+                </p>
+
             </div>
+
 
             <div class="pib-service-grid">
 
@@ -282,15 +568,21 @@
                     href="{{ url_for('user_management_page') }}"
                     class="pib-service-card"
                 >
-                    <div class="service-icon">U</div>
+                    <div class="service-icon">
+                        U
+                    </div>
 
-                    <h3>User Management</h3>
+                    <h3>
+                        User Management
+                    </h3>
 
                     <p>
-                        Activate, deactivate and review system users.
+                        Activate, deactivate, review, and remove users.
                     </p>
 
-                    <span>Open →</span>
+                    <span>
+                        Open →
+                    </span>
                 </a>
 
             </div>
@@ -308,5 +600,141 @@
 
     </footer>
 
+
+    <script>
+
+        const transactionContext =
+            document.getElementById("transactionChart");
+
+        new Chart(transactionContext, {
+
+            type: "bar",
+
+            data: {
+
+                labels: {{ transaction_labels | tojson }},
+
+                datasets: [
+                    {
+                        label: "Transactions",
+
+                        data: {{ transaction_values | tojson }},
+
+                        backgroundColor: "#d97706",
+
+                        borderWidth: 0,
+
+                        borderRadius: 6,
+
+                        maxBarThickness: 58
+                    }
+                ]
+            },
+
+            options: {
+
+                responsive: true,
+
+                maintainAspectRatio: false,
+
+                plugins: {
+
+                    legend: {
+                        display: false
+                    }
+
+                },
+
+                scales: {
+
+                    x: {
+
+                        grid: {
+                            display: false
+                        }
+
+                    },
+
+                    y: {
+
+                        beginAtZero: true,
+
+                        ticks: {
+                            precision: 0
+                        },
+
+                        grid: {
+                            color: "rgba(15, 23, 42, 0.08)"
+                        }
+
+                    }
+
+                }
+
+            }
+
+        });
+
+
+        const accountContext =
+            document.getElementById("accountChart");
+
+        new Chart(accountContext, {
+
+            type: "doughnut",
+
+            data: {
+
+                labels: {{ account_labels | tojson }},
+
+                datasets: [
+                    {
+                        data: {{ account_values | tojson }},
+
+                        backgroundColor: [
+                            "#132b46",
+                            "#d97706",
+                            "#64748b",
+                            "#0f766e"
+                        ],
+
+                        borderWidth: 3,
+
+                        borderColor: "#ffffff"
+                    }
+                ]
+
+            },
+
+            options: {
+
+                responsive: true,
+
+                maintainAspectRatio: false,
+
+                cutout: "66%",
+
+                plugins: {
+
+                    legend: {
+
+                        position: "bottom",
+
+                        labels: {
+                            padding: 18,
+                            usePointStyle: true
+                        }
+
+                    }
+
+                }
+
+            }
+
+        });
+
+    </script>
+
 </body>
+
 </html>
