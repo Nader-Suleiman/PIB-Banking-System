@@ -1,17 +1,37 @@
+import os   
+from dotenv import load_dotenv
+from werkzeug.security import (check_password_hash, generate_password_hash)
+load_dotenv(override=True)
+
+from flask_wtf.csrf import CSRFProtect, CSRFError
 from flask import Flask, render_template, request, flash, redirect, url_for, session
+from decimal import Decimal, InvalidOperation
+from datetime import timedelta
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 
 from account import Account
 from customer import Customer
 from loan import Loan
 from user import User
 from database import (create_tables,get_account,get_all_accounts,get_all_transactions,insert_transaction,update_account_balance, insert_loan, customer_exists,insert_customer, insert_account, account_exists, insert_user, user_exists, get_user_by_username,add_customer_id_to_users,get_accounts_by_customer,
-link_user_to_customer,get_transactions_by_customer,add_role_to_users,get_all_users,update_user_status,delete_user,get_analytics_summary,get_transactions_by_type,get_accounts_by_type, get_recent_transactions,get_top_account_balances,get_customer_financial_details)
+link_user_to_customer,get_transactions_by_customer,add_role_to_users,get_all_users,update_user_status,delete_user,get_analytics_summary,get_transactions_by_type,get_accounts_by_type, get_recent_transactions,get_top_account_balances,get_customer_financial_details,increment_failed_login_attempts,reset_failed_login_attempts,deactivate_user_after_failed_logins)
 
 from helpers import(login_required,is_customer,is_teller,is_admin,is_staff)
 
 app = Flask(__name__)
+app.secret_key = os.environ["SECRET_KEY"]
 
-app.secret_key = "banking_secret_key"
+app.config.update(
+    SESSION_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_SAMESITE="Lax",
+    PERMANENT_SESSION_LIFETIME=timedelta(minutes=30),
+    SESSION_REFRESH_EACH_REQUEST=True
+)
+
+csrf = CSRFProtect(app)
+
+limiter = Limiter(key_func=get_remote_address,app=app,default_limits=[],storage_uri="memory://")
 
 
 @app.route("/dashboard")
@@ -33,6 +53,9 @@ def dashboard():
 @app.route("/deposit", methods=["GET", "POST"])
 def deposit_page():
 
+    if "user_id" not in session:
+        return redirect(url_for("login_page"))
+
     if request.method == "POST":
 
         account_number = request.form.get(
@@ -53,13 +76,11 @@ def deposit_page():
             return redirect(url_for("deposit_page"))
 
         try:
-            amount = float(amount_text)
+            amount = Decimal(amount_text)
 
-        except ValueError:
-            flash(
-                "Please enter a valid deposit amount.",
-                "error"
-            )
+        except InvalidOperation:
+            flash("Please enter a valid deposit amount.","error")
+            
             return redirect(url_for("deposit_page"))
 
         if amount <= 0:
@@ -74,6 +95,16 @@ def deposit_page():
         if account_data is None:
             flash(
                 "Account was not found.",
+                "error"
+            )
+            return redirect(url_for("deposit_page"))
+
+        if (
+            session.get("role") == "Customer"
+            and account_data[1] != session.get("customer_id")
+        ):
+            flash(
+                "You can only deposit into your own account.",
                 "error"
             )
             return redirect(url_for("deposit_page"))
@@ -128,9 +159,12 @@ def deposit_page():
     return render_template("deposit.html")
 
 
-@app.route("/withdraw", methods=["GET" , "POST"])
+@app.route("/withdraw", methods=["GET", "POST"])
 def withdraw_page():
-    
+
+    if "user_id" not in session:
+        return redirect(url_for("login_page"))
+
     if request.method == "POST":
         account_number = request.form.get("account_number", "").strip()
         amount_text = request.form.get("amount", "").strip()
@@ -140,9 +174,9 @@ def withdraw_page():
             return redirect(url_for("withdraw_page"))
         
         try:
-            amount = float(amount_text)
+            amount = Decimal(amount_text)
         
-        except ValueError:
+        except InvalidOperation:
             flash("Please Enter a valid withdrawal amount." , "error")
             return redirect(url_for("withdraw_page"))
         
@@ -152,10 +186,25 @@ def withdraw_page():
         account_data = get_account(account_number)
         
         if account_data is None:
-            flash("Account was not found." , "error")
+            flash("Account was not found.", "error")
             return redirect(url_for("withdraw_page"))
-        
-        account_record = Account(account_number = account_data[0], customer_id = account_data[1], account_type = account_data[2], balance=account_data[3])
+
+        if (
+            session.get("role") == "Customer"
+            and account_data[1] != session.get("customer_id")
+        ):
+            flash(
+                "You can only withdraw from your own account.",
+                "error"
+            )
+            return redirect(url_for("withdraw_page"))
+
+        account_record = Account(
+            account_number=account_data[0],
+            customer_id=account_data[1],
+            account_type=account_data[2],
+            balance=account_data[3]
+        )
         
         account_record.is_active = bool(account_data[4])
         
@@ -188,7 +237,10 @@ def withdraw_page():
 
 @app.route("/transfer", methods=["GET", "POST"])
 def transfer_page():
-    
+
+    if "user_id" not in session:
+        return redirect(url_for("login_page"))
+
     if request.method == "POST":
         
         sender_account_number = request.form.get("sender_account_number", "").strip()
@@ -210,9 +262,9 @@ def transfer_page():
             return redirect(url_for("transfer_page"))
         
         try:
-            amount = float(amount_text)
+            amount = Decimal(amount_text)
             
-        except ValueError:
+        except InvalidOperation:
             flash("Please enter a valid transfer account." , "error")
             return redirect(url_for("transfer_page"))
         
@@ -228,10 +280,25 @@ def transfer_page():
             return redirect(url_for("transfer_page"))
         
         if receiver_data is None:
-            flash("receiver account was not found." , "error")
+            flash("Receiver account was not found.", "error")
             return redirect(url_for("transfer_page"))
-        
-        sender_account = Account(account_number=sender_data[0],customer_id=sender_data[1], account_type=sender_data[2],balance=sender_data[3])
+
+        if (
+            session.get("role") == "Customer"
+            and sender_data[1] != session.get("customer_id")
+        ):
+            flash(
+                "You can only transfer money from your own account.",
+                "error"
+            )
+            return redirect(url_for("transfer_page"))
+
+        sender_account = Account(
+            account_number=sender_data[0],
+            customer_id=sender_data[1],
+            account_type=sender_data[2],
+            balance=sender_data[3]
+        )
         
         sender_account.is_active = bool(sender_data[4])
         
@@ -305,10 +372,11 @@ def transactions_page():
 
 @app.route("/loans/create", methods=["GET", "POST"])
 def create_loan_page():
+    
+    if "user_id" not in session:
+        return redirect(url_for("login_page"))
 
     if request.method == "POST":
-
-        loan_id = request.form.get("loan_id", "").strip()
         customer_id_text = request.form.get(
             "customer_id", ""
         ).strip()
@@ -321,10 +389,6 @@ def create_loan_page():
         term_text = request.form.get(
             "loan_term_months", ""
         ).strip()
-
-        if not loan_id:
-            flash("Please enter a loan ID.", "error")
-            return redirect(url_for("create_loan_page"))
 
         try:
             customer_id = int(customer_id_text)
@@ -367,7 +431,7 @@ def create_loan_page():
             return redirect(url_for("create_loan_page"))
 
         loan = Loan(
-            loan_id=loan_id,
+            loan_id="CALCULATOR",
             customer_id=customer_id,
             principal=principal,
             annual_interest_rate=annual_interest_rate,
@@ -385,10 +449,8 @@ def create_loan_page():
             total_repayment - loan.principal
         )
 
-        insert_loan(loan)
-
         flash(
-            "Loan calculated and created successfully.",
+            "Loan calculated successfully.",
             "success"
         )
 
@@ -474,9 +536,10 @@ def create_account_page():
             flash("This username already exists.", "error")
             return redirect(url_for("create_account_page"))
         
-        user = User(user_id=user_id,username=username,password=password,customer_id=customer_id)
+        hashed_password = generate_password_hash(password)
+        user = User(user_id=user_id,username=username,password=hashed_password,customer_id=customer_id)
 
-        customer = Customer(user_id=user_id,username=username,password=password,customer_id=customer_id,full_name=full_name,phone=phone,email=email,address=address)
+        customer = Customer(user_id=user_id,username=username,password=hashed_password,customer_id=customer_id,full_name=full_name,phone=phone,email=email,address=address)
 
         account = Account(account_number=account_number,customer_id=customer_id,account_type=account_type,balance=initial_deposit)
 
@@ -495,12 +558,10 @@ def root():
     return redirect(url_for("login_page"))
 
 @app.route("/login", methods=["GET", "POST"])
+@limiter.limit("5 per minute", methods=["POST"])
 def login_page():
 
     # Clear old queued flash messages when opening the login page
-    if request.method == "GET":
-        session.pop("_flashes", None)
-
     if request.method == "POST":
 
         username = request.form.get("username", "").strip()
@@ -509,21 +570,60 @@ def login_page():
         user = get_user_by_username(username)
 
         if user is None:
-            flash("Username not found.", "error")
+            flash(
+                "Invalid username or password.",
+                "error")
             return redirect(url_for("login_page"))
 
         saved_password = user[2]
         is_active = user[3]
         customer_id = user[4]
         role = user[5]
+        failed_attempts = user[6]
 
-        if password != saved_password:
-            flash("Incorrect password.", "error")
+        if not check_password_hash(saved_password, password):
+
+            failed_attempts = increment_failed_login_attempts(user[0])
+
+            if failed_attempts is None:
+                flash(
+                    "The login attempt could not be processed. Please try again.",
+                    "error"
+                )
+
+            elif failed_attempts >= 5:
+
+                deactivate_user_after_failed_logins(user[0])
+
+                flash(
+                    "Account deactivated due to multiple unsuccessful login attempts.\n\n"
+                    "Please contact Palestine Investment Bank or an administrator to restore access.",
+                    "error"
+                )
+
+            else:
+
+                remaining_attempts = 5 - failed_attempts
+
+                flash(
+                    f"Invalid username or password.\n\n"
+                    f"{remaining_attempts} attempt(s) remaining.",
+                    "error"
+                )
+
             return redirect(url_for("login_page"))
 
         if not is_active:
-            flash("This user account is inactive.", "error")
+            flash(
+                "This account has been deactivated.\n\n"
+                "Please contact Palestine Investment Bank or an administrator.",
+                "error")
             return redirect(url_for("login_page"))
+
+        reset_failed_login_attempts(user[0])
+
+        session.clear()
+        session.permanent = True
 
         session["user_id"] = user[0]
         session["username"] = user[1]
@@ -595,8 +695,6 @@ def logout():
 @app.route("/admin/create-teller", methods=["GET", "POST"])
 def create_teller_page():
     
-    print("CURRENT ROLE:", session.get("role"))
-
     if "user_id" not in session:
         return redirect(url_for("login_page"))
 
@@ -632,7 +730,7 @@ def create_teller_page():
         teller = User(
             user_id=user_id,
             username=username,
-            password=password,
+            password=generate_password_hash(password),
             customer_id=None,
             role="Teller"
         )
@@ -684,7 +782,7 @@ def create_admin_page():
         admin_user = User(
             user_id=user_id,
             username=username,
-            password=password,
+            password=generate_password_hash(password),
             customer_id=None,
             role="Admin"
         )
@@ -905,9 +1003,26 @@ def customer_financial_details(user_id):
         transactions=transactions
     )
 
+
+@app.errorhandler(CSRFError)
+def handle_csrf_error(error):
+    flash(
+        "Your form session expired or the request was invalid. "
+        "Please try again.",
+        "error"
+    )
+
+    return redirect(
+        request.referrer or url_for("login_page")
+    )
+
+@app.errorhandler(429)
+def handle_rate_limit(error):
+    flash(
+        "Too many login attempts. Please wait one minute and try again.",
+        "error"
+    )
+    return redirect(url_for("login_page"))
+
 if __name__ == "__main__":
-    create_tables()
-    add_customer_id_to_users()
-    add_role_to_users()
-    app.run(debug=True)
-    
+    app.run(debug=False)

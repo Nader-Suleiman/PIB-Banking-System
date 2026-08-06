@@ -2,7 +2,11 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, inital-scale=1.0">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
     <title>Create Loan</title>
 
@@ -10,7 +14,6 @@
         rel="stylesheet"
         href="{{ url_for('static', filename='style.css') }}"
     >
-
 </head>
 
 <body class="service-page">
@@ -32,9 +35,14 @@
 
         <div class="header-user">
 
-            <span>{{ session['username'] }}</span>
+            <span>
+                {{ session['username'] }}
+            </span>
 
-            <a href="{{ url_for('logout') }}" class="logout-button">
+            <a
+                href="{{ url_for('logout') }}"
+                class="logout-button"
+            >
                 Logout
             </a>
 
@@ -64,12 +72,14 @@
                     </h2>
 
                     <p>
-                        Create a new loan and calculate the monthly installment.
+                        Create a new loan and calculate the monthly
+                        payment schedule.
                     </p>
 
                 </div>
 
             </div>
+
 
             {% with messages = get_flashed_messages(with_categories=true) %}
 
@@ -87,71 +97,334 @@
 
             {% endwith %}
 
+
             <form
                 action="{{ url_for('create_loan_page') }}"
                 method="POST"
                 class="service-form"
             >
 
-                <div class="form-group">
-                    <label>Loan ID</label>
-                    <input
-                        type="text"
-                        name="loan_id"
-                        placeholder="Example: LN1001"
-                        required
-                    >
-                </div>
+                <input
+                    type="hidden"
+                    name="csrf_token"
+                    value="{{ csrf_token() }}"
+                >
+
 
                 <div class="form-group">
-                    <label>Customer ID</label>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="customer_id">
+                        Customer ID
+                    </label>
+
                     <input
                         type="number"
+                        id="customer_id"
                         name="customer_id"
                         required
                     >
+
                 </div>
 
+
                 <div class="form-group">
-                    <label>Loan Amount</label>
+
+                    <label for="principal">
+                        Loan Amount
+                    </label>
+
                     <input
                         type="number"
+                        id="principal"
                         name="principal"
                         min="0.01"
                         step="0.01"
                         required
                     >
+
                 </div>
 
+
                 <div class="form-group">
-                    <label>Annual Interest Rate (%)</label>
+
+                    <label for="annual_interest_rate">
+                        Annual Interest Rate (%)
+                    </label>
+
                     <input
                         type="number"
+                        id="annual_interest_rate"
                         name="annual_interest_rate"
                         step="0.01"
                         min="0"
                         required
                     >
+
                 </div>
 
+
                 <div class="form-group">
-                    <label>Loan Term (Months)</label>
+
+                    <label for="loan_term_months">
+                        Loan Term (Months)
+                    </label>
+
                     <input
                         type="number"
+                        id="loan_term_months"
                         name="loan_term_months"
                         min="1"
                         required
                     >
+
                 </div>
+
 
                 <button
                     type="submit"
                     class="pib-submit-button"
                 >
-                    Create Loan
+                    Create and Calculate Loan
                 </button>
 
             </form>
+
+
+            {% if loan %}
+
+                <section class="executive-section">
+
+                    <div class="executive-section-heading">
+
+                        <div>
+
+                            <p class="executive-eyebrow">
+                                LOAN SUMMARY
+                            </p>
+
+                            <h2>
+                                Loan Calculation Results
+                            </h2>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="analytics-grid">
+
+                        <div class="summary-card">
+
+                            <h3>
+                                Loan ID
+                            </h3>
+
+                            <h2>
+                                {{ loan.loan_id }}
+                            </h2>
+
+                        </div>
+
+
+                        <div class="summary-card">
+
+                            <h3>
+                                Customer ID
+                            </h3>
+
+                            <h2>
+                                {{ loan.customer_id }}
+                            </h2>
+
+                        </div>
+
+
+                        <div class="summary-card">
+
+                            <h3>
+                                Loan Amount
+                            </h3>
+
+                            <h2>
+                                ${{ "{:,.2f}".format(loan.principal) }}
+                            </h2>
+
+                        </div>
+
+
+                        <div class="summary-card">
+
+                            <h3>
+                                Annual Interest Rate
+                            </h3>
+
+                            <h2>
+                                {{ "%.2f"|format(loan.annual_interest_rate) }}%
+                            </h2>
+
+                        </div>
+
+
+                        <div class="summary-card">
+
+                            <h3>
+                                Loan Term
+                            </h3>
+
+                            <h2>
+                                {{ loan.loan_term_months }} months
+                            </h2>
+
+                        </div>
+
+
+                        <div class="summary-card">
+
+                            <h3>
+                                Monthly Installment
+                            </h3>
+
+                            <h2>
+                                ${{ "{:,.2f}".format(loan.monthly_installment) }}
+                            </h2>
+
+                        </div>
+
+
+                        <div class="summary-card">
+
+                            <h3>
+                                Total Interest
+                            </h3>
+
+                            <h2>
+                                ${{ "{:,.2f}".format(total_interest) }}
+                            </h2>
+
+                        </div>
+
+
+                        <div class="summary-card">
+
+                            <h3>
+                                Total Repayment
+                            </h3>
+
+                            <h2>
+                                ${{ "{:,.2f}".format(total_repayment) }}
+                            </h2>
+
+                        </div>
+
+                    </div>
+
+                </section>
+
+
+                {% if payment_schedule %}
+
+                    <section class="executive-section">
+
+                        <div class="executive-section-heading">
+
+                            <div>
+
+                                <p class="executive-eyebrow">
+                                    PAYMENT PLAN
+                                </p>
+
+                                <h2>
+                                    Monthly Payment Schedule
+                                </h2>
+
+                                <p>
+                                    Review how each payment is divided between
+                                    interest and principal.
+                                </p>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="executive-table-card">
+
+                            <table class="executive-table">
+
+                                <thead>
+
+                                    <tr>
+                                        <th>Payment</th>
+                                        <th>Starting Balance</th>
+                                        <th>Payment Amount</th>
+                                        <th>Interest</th>
+                                        <th>Principal</th>
+                                        <th>Remaining Balance</th>
+                                    </tr>
+
+                                </thead>
+
+                                <tbody>
+
+                                    {% for payment in payment_schedule %}
+
+                                        <tr>
+
+                                            <td>
+                                                {{ payment["payment_number"] }}
+                                            </td>
+
+                                            <td>
+                                                ${{ "{:,.2f}".format(
+                                                    payment["starting_balance"]
+                                                ) }}
+                                            </td>
+
+                                            <td>
+                                                ${{ "{:,.2f}".format(
+                                                    payment["payment_amount"]
+                                                ) }}
+                                            </td>
+
+                                            <td>
+                                                ${{ "{:,.2f}".format(
+                                                    payment["interest_amount"]
+                                                ) }}
+                                            </td>
+
+                                            <td>
+                                                ${{ "{:,.2f}".format(
+                                                    payment["principal_amount"]
+                                                ) }}
+                                            </td>
+
+                                            <td>
+                                                ${{ "{:,.2f}".format(
+                                                    payment["remaining_balance"]
+                                                ) }}
+                                            </td>
+
+                                        </tr>
+
+                                    {% endfor %}
+
+                                </tbody>
+
+                            </table>
+
+                        </div>
+
+                    </section>
+
+                {% endif %}
+
+            {% endif %}
+
 
             <a
                 href="{{ url_for('dashboard') }}"
@@ -163,7 +436,6 @@
         </section>
 
     </main>
+
+</body>
 </html>
-
-
-

@@ -4,14 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Create Account</title> 
+    <title>Create Account</title>
 
-    <link 
+    <link
         rel="stylesheet"
         href="{{ url_for('static', filename='style.css') }}"
     >
-    
+
 </head>
+
 <body class="service-page">
 
     <header class="pib-header">
@@ -81,6 +82,12 @@
                 method="POST"
                 class="service-form"
             >
+
+                <input
+                    type="hidden"
+                    name="csrf_token"
+                    value="{{ csrf_token() }}"
+                >
 
                 <div class="form-group">
                     <label>User ID</label>
@@ -162,7 +169,11 @@
 
                 <div class="form-group">
                     <label>Account Type</label>
-                    <select name="account_type" required>
+
+                    <select
+                        name="account_type"
+                        required
+                    >
 
                         <option value="">
                             Select Account Type
@@ -177,10 +188,12 @@
                         </option>
 
                     </select>
+
                 </div>
 
                 <div class="form-group">
                     <label>Initial Deposit</label>
+
                     <input
                         type="number"
                         name="initial_deposit"

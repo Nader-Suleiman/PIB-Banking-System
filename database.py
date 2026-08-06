@@ -1,86 +1,34 @@
-import sqlite3
-import hashlib 
+import hashlib
+import os
+
+import psycopg
+from dotenv import load_dotenv
+
+
+load_dotenv(override=True)
+
 
 def create_connection():
-    connection = sqlite3.connect("banking_system.db")
-    connection.execute("PRAGMA foreign_keys = ON")
-    return connection 
+    database_url = os.environ.get("DATABASE_URL")
+
+    if not database_url:
+        raise RuntimeError(
+            "DATABASE_URL is missing. Add it to your .env file."
+        )
+
+    return psycopg.connect(
+        database_url,
+        prepare_threshold=None
+    )
 
 def create_tables():
-    connection = create_connection()
-    cursor = connection.cursor()
-    
-    cursor.execute("""
-CREATE TABLE IF NOT EXISTS users (
-    user_id INTEGER PRIMARY KEY,
-    username TEXT UNIQUE NOT NULL,
-    password TEXT NOT NULL,
-    role TEXT NOT NULL DEFAULT 'Customer',
-    is_active INTEGER NOT NULL,
-    customer_id INTEGER
-)
-""")
-    
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS customers (
-            customer_id INTEGER PRIMARY KEY,
-            full_name TEXT NOT NULL,
-            phone TEXT,
-            email TEXT,
-            address TEXT,
-            is_active INTEGER NOT NULL
-        )
-    """)
+    """Supabase tables are managed in the Supabase SQL Editor."""
+    print(
+        "Supabase schema is managed remotely; "
+        "create_tables() made no changes."
+    )
 
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS accounts (
-            account_number TEXT PRIMARY KEY,
-            customer_id INTEGER NOT NULL,
-            account_type TEXT NOT NULL,
-            balance REAL NOT NULL DEFAULT 0,
-            is_active INTEGER NOT NULL,
 
-            FOREIGN KEY (customer_id)
-            REFERENCES customers(customer_id)
-        )
-    """)
-
-    
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS transactions (
-            transaction_id INTEGER PRIMARY KEY AUTOINCREMENT,
-            account_number TEXT NOT NULL,
-            transaction_type TEXT NOT NULL,
-            amount REAL NOT NULL,
-            status TEXT NOT NULL,
-            date_created TEXT NOT NULL,
-
-            FOREIGN KEY (account_number)
-            REFERENCES accounts(account_number)
-        )
-    """)
-
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS loans (
-            loan_id TEXT PRIMARY KEY,
-            customer_id INTEGER NOT NULL,
-            principal REAL NOT NULL,
-            annual_interest_rate REAL NOT NULL,
-            loan_term_months INTEGER NOT NULL,
-            monthly_installment REAL NOT NULL,
-            remaining_balance REAL NOT NULL,
-            is_active INTEGER NOT NULL,
-
-            FOREIGN KEY (customer_id)
-            REFERENCES customers(customer_id)
-        )
-    """)
-
-    connection.commit()
-    connection.close()
-
-    print("Database and tables created successfully.")
-    
 def insert_customer(customer):
     connection = create_connection()
     cursor = connection.cursor()
@@ -100,19 +48,19 @@ def insert_customer(customer):
                 address,
                 is_active
             )
-            VALUES (?, ?, ?, ?, ?, ?)
+            VALUES (%s, %s, %s, %s, %s, %s)
         """, (
             customer.customer_id, 
             customer.full_name, 
             customer.phone, 
             customer.email, 
             customer.address,
-            1 if customer.is_active else 0 
+            bool(customer.is_active) 
         ))
 
         connection.commit()
         print("Customer saved to database successfully.")
-    except sqlite3.IntegrityError:
+    except psycopg.IntegrityError:
             print("Error: A customer with this ID already exists.")
     finally :
         connection.close()
@@ -152,20 +100,20 @@ def insert_account(account):
                 balance,
                 is_active
             )
-            VALUES (?, ?, ?, ?, ?)
+            VALUES (%s, %s, %s, %s, %s)
         """,(
                 account.account_number,
                 account.customer_id,
                 account.account_type,
                 account.balance,
-                1 if account.is_active else 0 
+                bool(account.is_active) 
              
         ))
         
         connection.commit()
         print("Account saved to database successfully.")
         
-    except sqlite3.IntegrityError as error:
+    except psycopg.IntegrityError as error:
         print(f"Error saving account: {error}")
         
     finally:
@@ -200,7 +148,7 @@ def insert_transaction(transaction):
                 status,
                 date_created 
             )
-            VALUES (?, ?, ?, ?, ?)
+            VALUES (%s, %s, %s, %s, %s)
         """,(
             transaction.account_number,
             transaction.transaction_type,
@@ -212,7 +160,7 @@ def insert_transaction(transaction):
         connection.commit()
         print("Transaction saved to database successfully")
     
-    except sqlite3.IntegrityError as error:
+    except psycopg.IntegrityError as error:
         print(f"Error saving transaction: {error}")
 
     finally:
@@ -243,8 +191,8 @@ def update_account_balance(account):
     try:
         cursor.execute("""
             UPDATE accounts 
-            SET balance = ? 
-            WHERE account_number = ? 
+            SET balance = %s 
+            WHERE account_number = %s 
         """, (
             account.balance, 
             account.account_number 
@@ -267,30 +215,44 @@ def create_login_account(username, password, role, customer_id=None):
     password_hash = hash_password(password)
 
     try:
+        cursor.execute(
+            "SELECT COALESCE(MAX(user_id), 0) + 1 FROM users"
+        )
+        user_id = cursor.fetchone()[0]
+
         cursor.execute("""
-            INSERT INTO login_users (
+            INSERT INTO users (
+                user_id,
                 username,
-                password_hash,
+                password,
                 role,
+                is_active,
                 customer_id
             )
-            VALUES (?, ?, ?, ?)
+            VALUES (%s, %s, %s, %s, %s, %s)
         """, (
+            user_id,
             username,
             password_hash,
             role,
+            True,
             customer_id
         ))
 
         connection.commit()
         print("Login account created successfully.")
+        return True
 
-    except sqlite3.IntegrityError as error:
+    except psycopg.IntegrityError as error:
+        connection.rollback()
         print(f"Error creating login account: {error}")
+        return False
 
     finally:
+        cursor.close()
         connection.close()
-        
+
+
 def insert_loan(loan):
     connection = create_connection()
     cursor = connection.cursor()
@@ -307,7 +269,7 @@ def insert_loan(loan):
                 remaining_balance,
                 is_active
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
         """, (
             loan.loan_id,
             loan.customer_id,
@@ -316,13 +278,13 @@ def insert_loan(loan):
             loan.loan_term_months,
             loan.monthly_installment,
             loan.remaining_balance,
-            1 if loan.is_active else 0
+            bool(loan.is_active)
         ))
 
         connection.commit()
         print("Loan saved to database successfully.")
 
-    except sqlite3.IntegrityError as error:
+    except psycopg.IntegrityError as error:
         print(f"Error saving loan: {error}")
 
     finally:
@@ -335,19 +297,19 @@ def update_loan_balance(loan):
     try:
         cursor.execute("""
             UPDATE loans
-            SET remaining_balance = ?,
-                is_active = ?
-            WHERE loan_id = ?
+            SET remaining_balance = %s,
+                is_active = %s
+            WHERE loan_id = %s
         """, (
             loan.remaining_balance,
-            1 if loan.is_active else 0,
+            bool(loan.is_active),
             loan.loan_id
         ))
 
         connection.commit()
         print("Loan balance updated in database.")
 
-    except sqlite3.Error as error:
+    except psycopg.Error as error:
         print(f"Error updating loan: {error}")
 
     finally:
@@ -374,7 +336,7 @@ def account_exists(account_number):
     cursor.execute("""
         SELECT *
         FROM accounts
-        WHERE account_number = ?
+        WHERE account_number = %s
     """, (account_number,))
 
     account = cursor.fetchone()
@@ -390,7 +352,7 @@ def customer_exists(customer_id):
     cursor.execute("""
         SELECT *
         FROM customers
-        WHERE customer_id = ?
+        WHERE customer_id = %s
     """, (customer_id,))
 
     customer = cursor.fetchone()
@@ -411,7 +373,7 @@ def get_account(account_number):
             balance,
             is_active
         FROM accounts
-        WHERE account_number = ?
+        WHERE account_number = %s
     """, (account_number,))
 
     account_data = cursor.fetchone()
@@ -421,7 +383,7 @@ def get_account(account_number):
     return account_data     
 
 def get_all_accounts():
-    connection = sqlite3.connect("banking_system.db")
+    connection = create_connection()
     cursor = connection.cursor() 
     
     cursor.execute(""" SELECT account_number,
@@ -467,7 +429,7 @@ def user_exists(username):
     cursor = connection.cursor()
 
     cursor.execute(
-        "SELECT 1 FROM users WHERE username = ?",
+        "SELECT 1 FROM users WHERE username = %s",
         (username,)
     )
 
@@ -495,13 +457,13 @@ def insert_user(user):
                 is_active,
                 customer_id
             )
-            VALUES (?, ?, ?, ?, ?, ?)
+            VALUES (%s, %s, %s, %s, %s, %s)
         """, (
             user.user_id,
             user.username,
             user.password,
             user.role,
-            1 if user.is_active else 0,
+            bool(user.is_active),
             user.customer_id
         ))
 
@@ -509,7 +471,7 @@ def insert_user(user):
         print("User saved successfully.")
         return True
 
-    except sqlite3.Error as error:
+    except psycopg.Error as error:
         print(f"Error saving user: {error}")
         return False
 
@@ -527,9 +489,10 @@ def get_user_by_username(username):
             password,
             is_active,
             customer_id,
-            role
+            role,
+            failed_login_attempts
         FROM users
-        WHERE username = ?
+        WHERE username = %s
     """, (username,))
 
     user = cursor.fetchone()
@@ -542,50 +505,15 @@ def get_user_by_username(username):
 
 
 def add_customer_id_to_users():
-    connection = create_connection()
-    cursor = connection.cursor()
-    
-    try:
-        cursor.execute("""
-            ALTER TABLE users
-            ADD COLUMN customer_id INTEGER
-        """)
-        
-        connection.commit()
-        print("customer_id added to users table.")
-        
-    except sqlite3.OperationalError as error:
-        if "duplicate column name" in str(error):
-            print("customer_id already exists in users table.")
-        else:
-            print(f"Error updating users table: {error}")
-            
-    finally:
-        connection.close()
-        
+    """Deprecated: the Supabase users table already has customer_id."""
+    print("customer_id already exists in the Supabase schema.")
+
+
 def add_role_to_users():
-    connection = create_connection()
-    cursor = connection.cursor()
+    """Deprecated: the Supabase users table already has role."""
+    print("role already exists in the Supabase schema.")
 
-    try:
-        cursor.execute("""
-            ALTER TABLE users
-            ADD COLUMN role TEXT NOT NULL DEFAULT 'Customer'
-        """)
 
-        connection.commit()
-        print("Role column added successfully.")
-
-    except sqlite3.OperationalError as error:
-        if "duplicate column name" in str(error):
-            print("Role column already exists.")
-        else:
-            print(error)
-
-    finally:
-        connection.close()
-        
-                       
 def get_accounts_by_customer(customer_id):
     connection = create_connection()
     cursor = connection.cursor()
@@ -598,7 +526,7 @@ def get_accounts_by_customer(customer_id):
                 balance,
                 is_active
             FROM accounts
-            WHERE customer_id = ?
+            WHERE customer_id = %s
     """, (customer_id,))
 
     accounts = cursor.fetchall()
@@ -612,8 +540,8 @@ def link_user_to_customer(username, customer_id):
     
     cursor.execute("""
         UPDATE users 
-        SET customer_id = ? 
-        WHERE username = ? 
+        SET customer_id = %s 
+        WHERE username = %s 
     """, (
         customer_id,
         username
@@ -640,7 +568,7 @@ def get_transactions_by_customer(customer_id):
         FROM transactions
         INNER JOIN accounts
             ON transactions.account_number = accounts.account_number
-        WHERE accounts.customer_id = ?
+        WHERE accounts.customer_id = %s
         ORDER BY transactions.transaction_id DESC
     """, (customer_id,))
 
@@ -654,17 +582,89 @@ def update_user_status(user_id, is_active):
     connection = create_connection()
     cursor = connection.cursor()
 
-    cursor.execute("""
-        UPDATE users
-        SET is_active = ?
-        WHERE user_id = ?
-    """, (
-        1 if is_active else 0,
-        user_id
-    ))
+    try:
+        if is_active:
+            cursor.execute("""
+                UPDATE users
+                SET
+                    is_active = TRUE,
+                    failed_login_attempts = 0
+                WHERE user_id = %s
+            """, (user_id,))
+        else:
+            cursor.execute("""
+                UPDATE users
+                SET is_active = FALSE
+                WHERE user_id = %s
+            """, (user_id,))
 
-    connection.commit()
-    connection.close()
+        connection.commit()
+
+    finally:
+        cursor.close()
+        connection.close()
+
+
+
+def increment_failed_login_attempts(user_id):
+    connection = create_connection()
+    cursor = connection.cursor()
+
+    try:
+        cursor.execute("""
+            UPDATE users
+            SET failed_login_attempts = failed_login_attempts + 1
+            WHERE user_id = %s
+            RETURNING failed_login_attempts
+        """, (user_id,))
+
+        result = cursor.fetchone()
+        connection.commit()
+
+        if result is None:
+            return None
+
+        return result[0]
+
+    finally:
+        cursor.close()
+        connection.close()
+
+
+def reset_failed_login_attempts(user_id):
+    connection = create_connection()
+    cursor = connection.cursor()
+
+    try:
+        cursor.execute("""
+            UPDATE users
+            SET failed_login_attempts = 0
+            WHERE user_id = %s
+        """, (user_id,))
+
+        connection.commit()
+
+    finally:
+        cursor.close()
+        connection.close()
+
+
+def deactivate_user_after_failed_logins(user_id):
+    connection = create_connection()
+    cursor = connection.cursor()
+
+    try:
+        cursor.execute("""
+            UPDATE users
+            SET is_active = FALSE
+            WHERE user_id = %s
+        """, (user_id,))
+
+        connection.commit()
+
+    finally:
+        cursor.close()
+        connection.close()
 
 
 def delete_user(user_id):
@@ -673,7 +673,7 @@ def delete_user(user_id):
 
     cursor.execute("""
         DELETE FROM users
-        WHERE user_id = ?
+        WHERE user_id = %s
     """, (user_id,))
 
     connection.commit()
@@ -725,7 +725,7 @@ def get_analytics_summary():
     cursor.execute("""
         SELECT COUNT(*)
         FROM users
-        WHERE is_active = 1
+        WHERE is_active = TRUE
     """)
     active_users = cursor.fetchone()[0]
 
@@ -791,7 +791,7 @@ def get_recent_transactions(limit=5):
             date_created
         FROM transactions
         ORDER BY transaction_id DESC
-        LIMIT ?
+        LIMIT %s
     """, (limit,))
     
     transactions = cursor.fetchall()
@@ -814,7 +814,7 @@ def get_top_account_balances(limit=5):
         INNER JOIN customers
             ON accounts.customer_id = customers.customer_id
         ORDER BY accounts.balance DESC
-        LIMIT ?
+        LIMIT %s
     """, (limit,)) 
     
     accounts = cursor.fetchall()
@@ -840,7 +840,7 @@ def get_customer_financial_details(user_id):
             ON users.customer_id = customers.customer_id
         INNER JOIN accounts 
             ON customers.customer_id = accounts.customer_id
-        WHERE users.user_id = ?
+        WHERE users.user_id = %s
     """,(user_id,))
     
     customer_details = cursor.fetchone()
@@ -859,13 +859,10 @@ def get_customer_financial_details(user_id):
             status,
             date_created
         FROM transactions
-        WHERE account_number = ?
+        WHERE account_number = %s
         ORDER BY transaction_id DESC
     """, (account_number,))
     
     transactions = cursor.fetchall()
     connection.close()
     return customer_details, transactions
-
-    
-    

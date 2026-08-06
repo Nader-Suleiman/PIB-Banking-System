@@ -1,5 +1,35 @@
-__pycache__/
-*.pyc
-.vscode/
+# Environment variables
+.env
 
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# IDE settings
+.vscode/
+.idea/
+
+# Operating system files
+.DS_Store
+Thumbs.db
+
+# Local databases
 *.db
+*.sqlite3
+
+# Log files
+*.log
+
+# Pytest cache
+.pytest_cache/
+
+# Python packaging
+build/
+dist/
+*.egg-info/

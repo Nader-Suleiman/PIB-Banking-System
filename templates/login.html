@@ -2,91 +2,230 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+
     <meta
         name="viewport"
         content="width=device-width, initial-scale=1.0"
     >
 
     <title>Login</title>
+
     <link
-    rel="stylesheet"
-    href="{{ url_for('static', filename='style.css') }}"
->
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
 </head>
 
 <body>
 
     <header class="login-header">
 
-    <div class="pib-brand">
+        <div class="pib-brand">
 
-        <div class="pib-logo-mark">
-            PIB
+            <div class="pib-logo-mark">
+                PIB
+            </div>
+
+            <div>
+
+                <h1>
+                    Palestine Investment Bank
+                </h1>
+
+                <p>
+                    بنك الاستثمار الفلسطيني
+                </p>
+
+            </div>
+
         </div>
 
-        <div>
+    </header>
 
-            <h1>Palestine Investment Bank</h1>
 
-            <p>بنك الاستثمار الفلسطيني</p>
+    <!-- TOAST POPUP MESSAGES -->
 
-        </div>
+    <div
+        id="toast-container"
+        class="toast-container"
+        aria-live="polite"
+        aria-atomic="true"
+    >
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+
+            {% if messages %}
+
+                {% for category, message in messages %}
+
+                    <div
+                        class="toast-message toast-{{ category }}"
+                        role="alert"
+                    >
+
+                        <div class="toast-icon">
+
+                            {% if category == "success" %}
+                                ✓
+                            {% elif category == "warning" %}
+                                !
+                            {% else %}
+                                ×
+                            {% endif %}
+
+                        </div>
+
+                        <div class="toast-content">
+
+                            {% if category == "success" %}
+
+                                <strong>
+                                    Success
+                                </strong>
+
+                            {% elif category == "warning" %}
+
+                                <strong>
+                                    Warning
+                                </strong>
+
+                            {% else %}
+
+                                <strong>
+                                    Login Error
+                                </strong>
+
+                            {% endif %}
+
+                            <p style="white-space: pre-line;">
+                                {{ message }}
+                            </p>
+
+                        </div>
+
+                        <button
+                            type="button"
+                            class="toast-close"
+                            aria-label="Close notification"
+                            onclick="closeToast(this)"
+                        >
+                            ×
+                        </button>
+
+                    </div>
+
+                {% endfor %}
+
+            {% endif %}
+
+        {% endwith %}
 
     </div>
 
-</header>
 
-<main class="login-container">
+    <main class="login-container">
 
-    <div class="login-card">
+        <div class="login-card">
 
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                <p>{{ message }}</p>
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
+            <form
+                action="{{ url_for('login_page') }}"
+                method="POST"
+            >
 
-    <form
-        action="{{ url_for('login_page') }}"
-        method="POST"
-    >
-        <label for="username">Username</label>
+                <input
+                    type="hidden"
+                    name="csrf_token"
+                    value="{{ csrf_token() }}"
+                >
 
-        <input
-            type="text"
-            id="username"
-            name="username"
-            required
-        >
+                <label for="username">
+                    Username
+                </label>
 
-        <br><br>
+                <input
+                    type="text"
+                    id="username"
+                    name="username"
+                    autocomplete="username"
+                    required
+                >
 
-        <label for="password">Password</label>
+                <br><br>
 
-        <input
-            type="password"
-            id="password"
-            name="password"
-            required
-        >
+                <label for="password">
+                    Password
+                </label>
 
-        <br><br>
+                <input
+                    type="password"
+                    id="password"
+                    name="password"
+                    autocomplete="current-password"
+                    required
+                >
 
-        <button type="submit">
-            Login
-        </button>
-    </form>
+                <br><br>
 
-<p>
-        Don’t have an account?
-        <a href="{{ url_for('create_account_page') }}">
-            Create Account
-        </a>
-</p>
+                <button type="submit">
+                    Login
+                </button>
 
-</div>
-</main>
+            </form>
+
+            <p>
+                Don’t have an account?
+
+                <a href="{{ url_for('create_account_page') }}">
+                    Create Account
+                </a>
+            </p>
+
+        </div>
+
+    </main>
+
+
+    <script>
+
+        function closeToast(button) {
+
+            const toast = button.closest(".toast-message");
+
+            if (!toast) {
+                return;
+            }
+
+            toast.classList.add("toast-hiding");
+
+            setTimeout(function () {
+                toast.remove();
+            }, 300);
+        }
+
+
+        document.addEventListener("DOMContentLoaded", function () {
+
+            const toasts = document.querySelectorAll(".toast-message");
+
+            toasts.forEach(function (toast, index) {
+
+                const displayTime = 5000 + (index * 300);
+
+                setTimeout(function () {
+
+                    toast.classList.add("toast-hiding");
+
+                    setTimeout(function () {
+                        toast.remove();
+                    }, 300);
+
+                }, displayTime);
+
+            });
+
+        });
+
+    </script>
+
 </body>
 </html>

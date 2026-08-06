@@ -74,6 +74,22 @@
 
 <main class="dashboard-content">
 
+    {% with messages = get_flashed_messages(with_categories=true) %}
+
+        {% if messages %}
+
+            {% for category, message in messages %}
+
+                <div class="message {{ category }}">
+                    {{ message }}
+                </div>
+
+            {% endfor %}
+
+        {% endif %}
+
+    {% endwith %}
+
     <section class="section-heading">
 
         <p class="section-label">
@@ -161,7 +177,7 @@
 
             <div class="service-icon">%</div>
 
-            <h3>Loans</h3>
+            <h3>Loan Calculator</h3>
 
             <p>Create and calculate loans.</p>
 

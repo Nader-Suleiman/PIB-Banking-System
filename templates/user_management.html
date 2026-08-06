@@ -164,12 +164,20 @@
                                             method="POST"
                                             action="{{ url_for('deactivate_user', user_id=user[0]) }}"
                                         >
+
+                                            <input
+                                                type="hidden"
+                                                name="csrf_token"
+                                                value="{{ csrf_token() }}"
+                                            >
+
                                             <button
                                                 type="submit"
                                                 class="action-button deactivate-button"
                                             >
                                                 Deactivate
                                             </button>
+
                                         </form>
 
                                     {% else %}
@@ -178,12 +186,20 @@
                                             method="POST"
                                             action="{{ url_for('activate_user', user_id=user[0]) }}"
                                         >
+
+                                            <input
+                                                type="hidden"
+                                                name="csrf_token"
+                                                value="{{ csrf_token() }}"
+                                            >
+
                                             <button
                                                 type="submit"
                                                 class="action-button activate-button"
                                             >
                                                 Activate
                                             </button>
+
                                         </form>
 
                                     {% endif %}
@@ -196,12 +212,20 @@
                                             action="{{ url_for('remove_user', user_id=user[0]) }}"
                                             onsubmit="return confirm('Are you sure you want to delete this login user?');"
                                         >
+
+                                            <input
+                                                type="hidden"
+                                                name="csrf_token"
+                                                value="{{ csrf_token() }}"
+                                            >
+
                                             <button
                                                 type="submit"
                                                 class="action-button delete-button"
                                             >
                                                 Delete
                                             </button>
+
                                         </form>
 
                                     {% endif %}

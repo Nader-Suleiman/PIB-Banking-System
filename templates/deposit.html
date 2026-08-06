@@ -1,155 +1,165 @@
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset = "UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-        <title>Deposit Money</title>
+    <title>Deposit Money</title>
 
-        <link
-            rel = "stylesheet"
-            href = "{{ url_for('static', filename='style.css')}}"
-        >
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
 
-    </head>
+</head>
 
-    <body class="service-page">
+<body class="service-page">
 
-        <header class="pib-header">
+    <header class="pib-header">
 
-            <div class="pib-brand">
+        <div class="pib-brand">
 
-                <div class="pib-logo-mark">
-                    PIB
+            <div class="pib-logo-mark">
+                PIB
+            </div>
+
+            <div>
+                <h1>Palestine Investment Bank</h1>
+                <p>بنك الاستثمار الفلسطيني</p>
+            </div>
+
+        </div>
+
+        <div class="header-user">
+
+            <span>
+                {{ session['username'] }}
+            </span>
+
+            <a href="{{ url_for('logout') }}" class="logout-button">
+                Logout
+            </a>
+
+        </div>
+
+    </header>
+
+
+    <main class="service-form-container">
+
+        <section class="service-form-card">
+
+            <div class="service-form-heading">
+
+                <div class="service-form-icon">
+                    $
                 </div>
 
                 <div>
-                    <h1>Palestine Investment Bank</h1>
-                    <p>بنك الاستثمار الفلسطيني</p>
+
+                    <p class="service-form-label">
+                        ACCOUNT SERVICE
+                    </p>
+
+                    <h2>
+                        Deposit Money
+                    </h2>
+
+                    <p>
+                        Enter the account number and the amount
+                        you would like to deposit.
+                    </p>
+
                 </div>
 
             </div>
 
-            <div class="header-user">
 
-                <span>
-                    {{ session['username'] }}
-                </span>
+            {% with messages = get_flashed_messages(with_categories=true) %}
 
-                <a href="{{ url_for('logout') }}" class="logout-button">
-                    Logout
-                </a>
+                {% if messages %}
 
-            </div>
+                    {% for category, message in messages %}
 
-        </header>
+                        <div class="message {{ category }}">
+                            {{ message }}
+                        </div>
+
+                    {% endfor %}
+
+                {% endif %}
+
+            {% endwith %}
 
 
-        <main class="service-form-container">
+            <form
+                method="POST"
+                action="{{ url_for('deposit_page') }}"
+                class="service-form"
+            >
 
-            <section class="service-form-card">
+                <input
+                    type="hidden"
+                    name="csrf_token"
+                    value="{{ csrf_token() }}"
+                >
 
-                <div class="service-form-heading">
+                <div class="form-group">
 
-                    <div class="service-form-icon">
-                        $
-                    </div>
+                    <label for="account_number">
+                        Account Number
+                    </label>
 
-                    <div>
-                        <p class="service-form-label">
-                            ACCOUNT SERVICE
-                        </p>
-
-                        <h2>
-                            Deposit Money
-                        </h2>
-
-                        <p>
-                            Enter the account number and the amount 
-                            Enter the amount you would like to deposit.
-                        </p>
-                    </div>
+                    <input
+                        type="text"
+                        id="account_number"
+                        name="account_number"
+                        placeholder="Example: ACC1001"
+                        required
+                    >
 
                 </div>
 
 
-                {% with messages = get_flashed_messages(with_categories=true) %}
+                <div class="form-group">
 
-                    {% if messages %}
+                    <label for="amount">
+                        Deposit Amount
+                    </label>
 
-                        {% for category, message in messages %}
+                    <input
+                        type="number"
+                        id="amount"
+                        name="amount"
+                        min="0.01"
+                        step="0.01"
+                        placeholder="Enter amount"
+                        required
+                    >
 
-                            <div class="message {{ category }}">
-                                {{ message }}
-                            </div>
-
-                        {% endfor %}
-
-                    {% endif %}
-
-                {% endwith %}
+                </div>
 
 
-                <form
-                    method="POST"
-                    action="{{ url_for('deposit_page') }}"
-                    class="service-form"
+                <button
+                    type="submit"
+                    class="pib-submit-button"
                 >
+                    Deposit Funds
+                </button>
 
-                    <div class="form-group">
-
-    <label for="account_number">
-        Account Number
-    </label>
-
-    <input
-        type="text"
-        id="account_number"
-        name="account_number"
-        placeholder="Example: ACC1001"
-        required
-    >
-
-</div>
+            </form>
 
 
-                    <div class="form-group">
+            <a
+                href="{{ url_for('dashboard') }}"
+                class="service-back-link"
+            >
+                ← Return to Dashboard
+            </a>
 
-                        <label for="amount">
-                            Deposit Amount
-                        </label>
+        </section>
 
-                        <input
-                            type="number"
-                            id="amount"
-                            name="amount"
-                            min="0.01"
-                            step="0.01"
-                            placeholder="Enter amount"
-                            required
-                        >
+    </main>
 
-                    </div>
-
-
-                    <button type="submit" class="pib-submit-button">
-                        Deposit Funds
-                    </button>
-
-                </form>
-
-
-                <a
-                    href="{{ url_for('dashboard') }}"
-                    class="service-back-link"
-                >
-                    ← Return to Dashboard
-                </a>
-
-            </section>
-
-        </main>
-
-    </body>
-    </html>
-
+</body>
+</html>

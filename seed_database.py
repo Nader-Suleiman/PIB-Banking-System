@@ -1,9 +1,13 @@
+import os
 import random
-import sqlite3
 from datetime import datetime, timedelta
+from werkzeug.security import generate_password_hash
+
+import psycopg
+from dotenv import load_dotenv
 
 
-DATABASE_NAME = "banking_system.db"
+load_dotenv(override=True)
 
 CUSTOMER_COUNT = 50
 TRANSACTION_COUNT = 500
@@ -43,9 +47,17 @@ ACCOUNT_TYPES = [
 
 
 def create_connection():
-    connection = sqlite3.connect(DATABASE_NAME)
-    connection.execute("PRAGMA foreign_keys = ON")
-    return connection
+    database_url = os.environ.get("DATABASE_URL")
+
+    if not database_url:
+        raise RuntimeError(
+            "DATABASE_URL is missing from the .env file."
+        )
+
+    return psycopg.connect(
+        database_url,
+        prepare_threshold=None
+    )
 
 
 def random_date_within_last_six_months():
@@ -56,17 +68,12 @@ def random_date_within_last_six_months():
         - timedelta(days=days_ago)
     )
 
-    random_hour = random.randint(8, 18)
-    random_minute = random.randint(0, 59)
-    random_second = random.randint(0, 59)
-
-    random_date = random_date.replace(
-        hour=random_hour,
-        minute=random_minute,
-        second=random_second
+    return random_date.replace(
+        hour=random.randint(8, 18),
+        minute=random.randint(0, 59),
+        second=random.randint(0, 59),
+        microsecond=0
     )
-
-    return random_date.strftime("%Y-%m-%d %H:%M:%S")
 
 
 def generate_unique_name(existing_names):
@@ -86,14 +93,12 @@ def calculate_monthly_installment(
     annual_interest_rate,
     loan_term_months
 ):
-    monthly_rate = (
-        annual_interest_rate / 100 / 12
-    )
+    monthly_rate = annual_interest_rate / 100 / 12
 
     if monthly_rate == 0:
         return principal / loan_term_months
 
-    payment = (
+    return (
         principal
         * monthly_rate
         * (1 + monthly_rate) ** loan_term_months
@@ -101,22 +106,55 @@ def calculate_monthly_installment(
         (1 + monthly_rate) ** loan_term_months - 1
     )
 
-    return payment
 
+def clear_old_demo_data(cursor):
+    print("Removing old demo data...")
 
-def clear_old_customer_data(cursor):
-    print("Removing previous customer demo data...")
-
-    cursor.execute("DELETE FROM transactions")
-    cursor.execute("DELETE FROM loans")
-    cursor.execute("DELETE FROM accounts")
-    cursor.execute("DELETE FROM customers")
-
-    # Keep Admin and Teller login users
     cursor.execute("""
-        DELETE FROM users
-        WHERE role = 'Customer'
+        TRUNCATE TABLE
+            audit_logs,
+            transactions,
+            loans,
+            accounts,
+            users,
+            customers
+        RESTART IDENTITY CASCADE
     """)
+
+
+def create_staff_users(cursor):
+    print("Creating Admin and Teller users...")
+
+    staff_users = [
+        (
+            9001,
+            "admin",
+            generate_password_hash("admin123"),
+            "Admin",
+            True,
+            None
+        ),
+        (
+            123,
+            "teller",
+            generate_password_hash("teller123"),
+            "Teller",
+            True,
+            None
+        )
+    ]
+
+    cursor.executemany("""
+        INSERT INTO users (
+            user_id,
+            username,
+            password,
+            role,
+            is_active,
+            customer_id
+        )
+        VALUES (%s, %s, %s, %s, %s, %s)
+    """, staff_users)
 
 
 def create_customers_accounts_and_users(cursor):
@@ -128,14 +166,11 @@ def create_customers_accounts_and_users(cursor):
     existing_names = set()
 
     for index in range(1, CUSTOMER_COUNT + 1):
-
         customer_id = 10000 + index
         user_id = 20000 + index
         account_number = f"ACC{30000 + index}"
 
-        full_name = generate_unique_name(
-            existing_names
-        )
+        full_name = generate_unique_name(existing_names)
 
         username = (
             full_name
@@ -144,12 +179,9 @@ def create_customers_accounts_and_users(cursor):
             + str(index)
         )
 
-        password = "demo123"
+        password = generate_password_hash("demo123")
 
-        phone_prefix = random.choice(
-            ["056", "059"]
-        )
-
+        phone_prefix = random.choice(["056", "059"])
         phone = (
             phone_prefix
             + str(random.randint(1000000, 9999999))
@@ -161,19 +193,9 @@ def create_customers_accounts_and_users(cursor):
             .replace(" ", ".")
         )
 
-        email = (
-            f"{email_name}{index}@example.com"
-        )
-
-        city = random.choice(CITIES)
-
-        address = (
-            f"{city}, Palestine"
-        )
-
-        account_type = random.choice(
-            ACCOUNT_TYPES
-        )
+        email = f"{email_name}{index}@example.com"
+        address = f"{random.choice(CITIES)}, Palestine"
+        account_type = random.choice(ACCOUNT_TYPES)
 
         initial_balance = round(
             random.uniform(1000, 45000),
@@ -189,14 +211,14 @@ def create_customers_accounts_and_users(cursor):
                 address,
                 is_active
             )
-            VALUES (?, ?, ?, ?, ?, ?)
+            VALUES (%s, %s, %s, %s, %s, %s)
         """, (
             customer_id,
             full_name,
             phone,
             email,
             address,
-            1
+            True
         ))
 
         cursor.execute("""
@@ -208,13 +230,13 @@ def create_customers_accounts_and_users(cursor):
                 is_active,
                 customer_id
             )
-            VALUES (?, ?, ?, ?, ?, ?)
+            VALUES (%s, %s, %s, %s, %s, %s)
         """, (
             user_id,
             username,
             password,
             "Customer",
-            1,
+            True,
             customer_id
         ))
 
@@ -226,27 +248,20 @@ def create_customers_accounts_and_users(cursor):
                 balance,
                 is_active
             )
-            VALUES (?, ?, ?, ?, ?)
+            VALUES (%s, %s, %s, %s, %s)
         """, (
             account_number,
             customer_id,
             account_type,
             initial_balance,
-            1
+            True
         ))
 
         customer_ids.append(customer_id)
         account_numbers.append(account_number)
+        account_balances[account_number] = initial_balance
 
-        account_balances[
-            account_number
-        ] = initial_balance
-
-    return (
-        customer_ids,
-        account_numbers,
-        account_balances
-    )
+    return customer_ids, account_numbers, account_balances
 
 
 def add_transaction(
@@ -264,7 +279,7 @@ def add_transaction(
             status,
             date_created
         )
-        VALUES (?, ?, ?, ?, ?)
+        VALUES (%s, %s, %s, %s, %s)
     """, (
         account_number,
         transaction_type,
@@ -282,31 +297,23 @@ def create_transactions(
     print("Creating transactions...")
 
     for _ in range(TRANSACTION_COUNT):
-
         transaction_choice = random.choices(
             ["Deposit", "Withdrawal", "Transfer"],
             weights=[45, 30, 25],
             k=1
         )[0]
 
-        date_created = (
-            random_date_within_last_six_months()
-        )
+        date_created = random_date_within_last_six_months()
 
         if transaction_choice == "Deposit":
-
-            account_number = random.choice(
-                account_numbers
-            )
+            account_number = random.choice(account_numbers)
 
             amount = round(
                 random.uniform(50, 5000),
                 2
             )
 
-            account_balances[
-                account_number
-            ] += amount
+            account_balances[account_number] += amount
 
             add_transaction(
                 cursor,
@@ -317,14 +324,8 @@ def create_transactions(
             )
 
         elif transaction_choice == "Withdrawal":
-
-            account_number = random.choice(
-                account_numbers
-            )
-
-            current_balance = account_balances[
-                account_number
-            ]
+            account_number = random.choice(account_numbers)
+            current_balance = account_balances[account_number]
 
             maximum_withdrawal = min(
                 3000,
@@ -335,16 +336,11 @@ def create_transactions(
                 continue
 
             amount = round(
-                random.uniform(
-                    20,
-                    maximum_withdrawal
-                ),
+                random.uniform(20, maximum_withdrawal),
                 2
             )
 
-            account_balances[
-                account_number
-            ] -= amount
+            account_balances[account_number] -= amount
 
             add_transaction(
                 cursor,
@@ -355,24 +351,15 @@ def create_transactions(
             )
 
         else:
+            sender_account = random.choice(account_numbers)
 
-            sender_account = random.choice(
-                account_numbers
-            )
-
-            receiver_candidates = [
+            receiver_account = random.choice([
                 account
                 for account in account_numbers
                 if account != sender_account
-            ]
+            ])
 
-            receiver_account = random.choice(
-                receiver_candidates
-            )
-
-            sender_balance = account_balances[
-                sender_account
-            ]
+            sender_balance = account_balances[sender_account]
 
             maximum_transfer = min(
                 4000,
@@ -383,26 +370,17 @@ def create_transactions(
                 continue
 
             amount = round(
-                random.uniform(
-                    25,
-                    maximum_transfer
-                ),
+                random.uniform(25, maximum_transfer),
                 2
             )
 
-            account_balances[
-                sender_account
-            ] -= amount
+            account_balances[sender_account] -= amount
+            account_balances[receiver_account] += amount
 
-            account_balances[
-                receiver_account
-            ] += amount
-
-            # One transaction record for each side
             add_transaction(
                 cursor,
                 sender_account,
-                "Transfer",
+                "Transfer Out",
                 amount,
                 date_created
             )
@@ -410,20 +388,16 @@ def create_transactions(
             add_transaction(
                 cursor,
                 receiver_account,
-                "Transfer",
+                "Transfer In",
                 amount,
                 date_created
             )
 
-    # Save final balances to accounts table
-    for account_number, balance in (
-        account_balances.items()
-    ):
-
+    for account_number, balance in account_balances.items():
         cursor.execute("""
             UPDATE accounts
-            SET balance = ?
-            WHERE account_number = ?
+            SET balance = %s
+            WHERE account_number = %s
         """, (
             round(balance, 2),
             account_number
@@ -442,7 +416,6 @@ def create_loans(cursor, customer_ids):
         selected_customers,
         start=1
     ):
-
         loan_id = f"LN{40000 + index}"
 
         principal = round(
@@ -468,12 +441,10 @@ def create_loans(cursor, customer_ids):
             60
         ])
 
-        monthly_installment = (
-            calculate_monthly_installment(
-                principal,
-                annual_interest_rate,
-                loan_term_months
-            )
+        monthly_installment = calculate_monthly_installment(
+            principal,
+            annual_interest_rate,
+            loan_term_months
         )
 
         amount_repaid = random.uniform(
@@ -497,7 +468,7 @@ def create_loans(cursor, customer_ids):
                 remaining_balance,
                 is_active
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
         """, (
             loan_id,
             customer_id,
@@ -506,44 +477,24 @@ def create_loans(cursor, customer_ids):
             loan_term_months,
             round(monthly_installment, 2),
             round(remaining_balance, 2),
-            1
+            True
         ))
 
 
 def print_summary(cursor):
-    print("\n========== DEMO DATABASE SUMMARY ==========")
+    print("\n========== SUPABASE DEMO SUMMARY ==========")
 
-    cursor.execute(
-        "SELECT COUNT(*) FROM customers"
-    )
-    print(
-        "Customers:",
-        cursor.fetchone()[0]
-    )
-
-    cursor.execute(
-        "SELECT COUNT(*) FROM accounts"
-    )
-    print(
-        "Accounts:",
-        cursor.fetchone()[0]
-    )
-
-    cursor.execute(
-        "SELECT COUNT(*) FROM transactions"
-    )
-    print(
-        "Transactions:",
-        cursor.fetchone()[0]
-    )
-
-    cursor.execute(
-        "SELECT COUNT(*) FROM loans"
-    )
-    print(
-        "Loans:",
-        cursor.fetchone()[0]
-    )
+    for label, table_name in [
+        ("Users", "users"),
+        ("Customers", "customers"),
+        ("Accounts", "accounts"),
+        ("Transactions", "transactions"),
+        ("Loans", "loans")
+    ]:
+        cursor.execute(
+            f"SELECT COUNT(*) FROM {table_name}"
+        )
+        print(f"{label}: {cursor.fetchone()[0]}")
 
     cursor.execute("""
         SELECT COALESCE(SUM(balance), 0)
@@ -552,15 +503,12 @@ def print_summary(cursor):
 
     total_balance = cursor.fetchone()[0]
 
-    print(
-        f"Total balance: ${total_balance:,.2f}"
-    )
+    print(f"Total balance: ${total_balance:,.2f}")
 
-    print("\nDemo customer login:")
-    print("Username example: generated from customer name")
-    print("Password for all demo customers: demo123")
-
-    print("\nAdmin and Teller users were preserved.")
+    print("\nDemo logins:")
+    print("Admin: admin / admin123")
+    print("Teller: teller / teller123")
+    print("Customers: generated username / demo123")
 
 
 def seed_database():
@@ -568,15 +516,14 @@ def seed_database():
     cursor = connection.cursor()
 
     try:
-        clear_old_customer_data(cursor)
+        clear_old_demo_data(cursor)
+        create_staff_users(cursor)
 
         (
             customer_ids,
             account_numbers,
             account_balances
-        ) = create_customers_accounts_and_users(
-            cursor
-        )
+        ) = create_customers_accounts_and_users(cursor)
 
         create_transactions(
             cursor,
@@ -590,21 +537,17 @@ def seed_database():
         )
 
         connection.commit()
-
         print_summary(cursor)
 
-        print(
-            "\nDatabase seeded successfully."
-        )
+        print("\nSupabase database seeded successfully.")
 
-    except sqlite3.Error as error:
+    except psycopg.Error as error:
         connection.rollback()
-
-        print(
-            f"\nDatabase seeding failed: {error}"
-        )
+        print(f"\nDatabase seeding failed: {error}")
+        raise
 
     finally:
+        cursor.close()
         connection.close()
 
 

@@ -7,11 +7,12 @@
     <title>Withdraw Money</title>
 
     <link
-        rel = "stylesheet"
-        href = "{{url_for('static', filename='style.css') }}"
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
     >
 
-</head> 
+</head>
+
 <body class="service-page">
 
     <header class="pib-header">
@@ -35,7 +36,10 @@
                 {{ session['username'] }}
             </span>
 
-            <a href="{{ url_for('logout') }}" class="logout-button">
+            <a
+                href="{{ url_for('logout') }}"
+                class="logout-button"
+            >
                 Logout
             </a>
 
@@ -55,6 +59,7 @@
                 </div>
 
                 <div>
+
                     <p class="service-form-label">
                         ACCOUNT SERVICE
                     </p>
@@ -67,6 +72,7 @@
                         Enter the account number and the amount
                         you would like to withdraw.
                     </p>
+
                 </div>
 
             </div>
@@ -94,6 +100,12 @@
                 action="{{ url_for('withdraw_page') }}"
                 class="service-form"
             >
+
+                <input
+                    type="hidden"
+                    name="csrf_token"
+                    value="{{ csrf_token() }}"
+                >
 
                 <div class="form-group">
 
@@ -131,7 +143,10 @@
                 </div>
 
 
-                <button type="submit" class="pib-submit-button">
+                <button
+                    type="submit"
+                    class="pib-submit-button"
+                >
                     Withdraw Funds
                 </button>
 
@@ -149,6 +164,5 @@
 
     </main>
 
-</body> 
-</html> 
-
+</body>
+</html>

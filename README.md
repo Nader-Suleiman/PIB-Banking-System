@@ -1,112 +1,149 @@
-# 🏦 Palestine Investment Bank - Banking System
+# Palestine Investment Bank - Banking System
 
-A role-based banking system developed using **Python**, **Flask**, and **SQLite** that simulates the core operations of a modern banking application.
+A role-based banking system developed using **Python**, **Flask**, and **Supabase PostgreSQL** that simulates the core operations of a modern banking application.
 
 ---
 
-## Overview
+# Overview
 
-This project was designed to demonstrate object-oriented programming, database management, user authentication, and role-based access control.
+This project demonstrates object-oriented programming, web development, database management, authentication, authorization, and secure banking operations.
 
-The system supports three different user roles:
+The application supports three different user roles:
 
 - **Customer**
 - **Teller**
 - **Administrator**
 
-Each role has its own dashboard and permissions, closely simulating how real banking systems separate responsibilities.
+Each role has its own dashboard, permissions, and banking operations, closely simulating how responsibilities are separated in a real banking environment.
 
 ---
 
-## Features
+# Features
 
-### Customer
+## Customer
+
 - Secure login
 - View personal bank accounts
-- View transaction history
-- Deposit money
-- Withdraw money
-- Transfer funds
-- Apply for loans
+- View personal transaction history
+- Deposit money into owned accounts
+- Withdraw money from owned accounts
+- Transfer money between accounts
+- Loan calculator with monthly payment schedule
+- Automatic logout support
 
 ---
 
-### Teller
+## Teller
+
 - Create customer accounts
 - Deposit funds
 - Withdraw funds
 - Transfer money
-- Create loans for customers
+- View all customer accounts
+- View all transactions
+- Loan calculator for customers
 
 ---
 
-### Administrator
-- Create Teller accounts
+## Administrator
+
 - Create Administrator accounts
-- Manage system users
-- Activate and deactivate users
+- Create Teller accounts
+- Manage all system users
+- Activate and deactivate user accounts
+- Automatic reactivation of locked accounts
+- View customer financial details
 - View all customer accounts
 - View all banking transactions
+- Analytics dashboard
+- Monitor customer balances and transaction activity
 
 ---
 
-## Technologies Used
+# Security Features
+
+- Password hashing using Werkzeug
+- CSRF protection using Flask-WTF
+- Secure session management
+- Role-based access control
+- Customer account ownership verification
+- Automatic account deactivation after five failed login attempts
+- Administrator account reactivation
+- Protected database queries
+- Environment variable configuration using `.env`
+
+---
+
+# Technologies Used
 
 - Python
 - Flask
-- SQLite
+- Supabase (PostgreSQL)
 - HTML5
 - CSS3
 - Jinja2
+- Flask-WTF
+- Flask-Limiter
+- Werkzeug
 
 ---
 
-## Project Structure
+# Project Structure
 
 ```
 PIB-Banking-System/
 │
 ├── app.py
 ├── database.py
+├── supabase_db.py
 ├── account.py
+├── admin.py
+├── teller.py
 ├── customer.py
+├── customer_info.py
+├── transactions.py
 ├── loan.py
-├── user.py
 ├── helpers.py
+├── seed_database.py
+├── create_admin.py
 ├── requirements.txt
+├── .gitignore
 ├── templates/
 └── static/
 ```
 
 ---
 
-## Authentication
+# Authentication
 
-The application uses role-based authentication.
+The application uses secure role-based authentication.
 
-After logging in, users are automatically redirected to the correct dashboard based on their role.
+After logging in, users are automatically redirected to their assigned dashboard.
 
 - Customer Dashboard
 - Teller Dashboard
 - Administrator Dashboard
 
-Access to protected pages is restricted according to user permissions.
+Unauthorized access is prevented through role verification and session validation.
 
 ---
 
-##  Database
+# Database
 
-The application uses **SQLite** to store:
+The application uses **Supabase PostgreSQL** as the backend database.
+
+The database stores:
 
 - Users
 - Customers
 - Accounts
 - Transactions
-- Loans
+- Loan calculations
+- Login security information
 
 ---
 
-##  Installation
+# Installation
 
 Clone the repository
 
@@ -126,6 +163,19 @@ Install dependencies
 pip install -r requirements.txt
 ```
 
+Create a `.env` file and configure your Supabase credentials.
+
+Example:
+
+```env
+SUPABASE_HOST=your_host
+SUPABASE_DATABASE=postgres
+SUPABASE_USER=postgres
+SUPABASE_PASSWORD=your_password
+SUPABASE_PORT=5432
+SECRET_KEY=your_secret_key
+```
+
 Run the application
 
 ```bash
@@ -134,24 +184,27 @@ python app.py
 
 ---
 
-## Future Improvements
+# Future Improvements
 
 - Automatic account number generation
-- Password hashing
 - Email notifications
-- Interest calculations
-- Mobile responsive design
-- Two-factor authentication
-- Account statements (PDF)
+- Two-factor authentication (2FA)
+- PDF account statements
+- Mobile banking interface
+- Bill payment services
+- Transaction search and filtering
+- Multi-language support
 
 ---
 
-## Author
+# Author
 
 **Nader Suleiman**
 
-Computer Science Student  
-University of Puerto Rico Bayamon
+Computer Science Student
+
+University of Puerto Rico Bayamón
 
 GitHub:
+
 https://github.com/Nader-Suleiman

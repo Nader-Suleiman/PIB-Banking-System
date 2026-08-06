@@ -110,6 +110,12 @@
                 class="service-form"
             >
 
+                <input
+                    type="hidden"
+                    name="csrf_token"
+                    value="{{ csrf_token() }}"
+                >
+
                 <div class="form-group">
 
                     <label for="user_id">
