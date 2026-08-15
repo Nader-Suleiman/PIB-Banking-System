@@ -1,6 +1,6 @@
 Flask
 Flask-Limiter
 Flask-WTF
-psycopg[binary]
+psycopg[binary]>=3.2,<4
 python-dotenv
 Werkzeug
